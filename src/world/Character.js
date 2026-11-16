@@ -239,25 +239,54 @@ export class Character {
     const base = document.getElementById('joyBase');
     const knob = document.getElementById('joyKnob');
     let id = null;
-    base.addEventListener('pointerdown', (e) => { id = e.pointerId; base.setPointerCapture(id); });
-    base.addEventListener('pointermove', (e) => {
-      if (e.pointerId !== id) return;
+    const move = (clientX, clientY) => {
       const r = base.getBoundingClientRect();
-      let dx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-      let dz = ((e.clientY - r.top) / r.height - 0.5) * 2;
+      let dx = ((clientX - r.left) / r.width - 0.5) * 2;
+      let dz = ((clientY - r.top) / r.height - 0.5) * 2;
       const d = Math.hypot(dx, dz);
       if (d > 1) { dx /= d; dz /= d; }
-      this.joy = { active: true, dx, dz, angle: Math.atan2(dz, dx), distance: Math.min(1, d) };
+      // their deadzone (.1): a resting thumb must not drift
+      if (d < 0.1) { dx = 0; dz = 0; }
+      this.joy = {
+        active: d >= 0.1, dx, dz,
+        angle: Math.atan2(dz, dx),
+        distance: d < 0.1 ? 0 : Math.min(1, d),
+      };
       knob.style.transform = `translate(${dx * 30}px,${dz * 30}px)`;
-    });
-    const end = (e) => {
-      if (e.pointerId !== id) return;
+    };
+    const end = () => {
       id = null;
       this.joy = { active: false, dx: 0, dz: 0, angle: 0, distance: 0 };
       knob.style.transform = 'translate(0,0)';
     };
-    base.addEventListener('pointerup', end);
-    base.addEventListener('pointercancel', end);
+
+    // Pointer events cover mouse and most touch browsers
+    base.addEventListener('pointerdown', (e) => {
+      id = e.pointerId;
+      base.setPointerCapture?.(id);
+      move(e.clientX, e.clientY);
+      e.preventDefault();
+    });
+    base.addEventListener('pointermove', (e) => { if (e.pointerId === id) move(e.clientX, e.clientY); });
+    base.addEventListener('pointerup', (e) => { if (e.pointerId === id) end(); });
+
+    // Touch events with preventDefault as a fallback: mobile Safari can cancel
+    // the pointer stream the moment it thinks the drag is a page scroll — that
+    // made the stick move for a split second and then stop. CSS touch-action
+    // below stops it at the source; these listeners make it bulletproof.
+    base.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      if (t) { id = 'touch'; move(t.clientX, t.clientY); }
+      e.preventDefault();
+    }, { passive: false });
+    base.addEventListener('touchmove', (e) => {
+      const t = e.touches[0];
+      if (t && id === 'touch') move(t.clientX, t.clientY);
+      e.preventDefault();
+    }, { passive: false });
+    for (const type of ['touchend', 'touchcancel']) {
+      base.addEventListener(type, (e) => { if (id === 'touch') end(); e.preventDefault(); }, { passive: false });
+    }
   }
 
   // Verbatim direction table from their directionOffset()
