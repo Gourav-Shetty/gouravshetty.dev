@@ -17,6 +17,8 @@ export class Dialogue {
     this.pages = [];
     this.onDone = null;
     this.timer = 0;
+    // reduced motion: the typewriter still reads, but it does not tick slowly
+    this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.buildBox();
     this.buildPortrait();
     this._key = (e) => {
@@ -98,6 +100,13 @@ export class Dialogue {
     this.textEl.textContent = '';
     this.nextEl.style.opacity = '0';
     clearInterval(this.timer);
+    if (this.reduced) {
+      // show the whole line at once, no typewriter, no blips
+      this.shown = this.full.length;
+      this.textEl.textContent = this.full;
+      this.nextEl.style.opacity = '1';
+      return;
+    }
     this.timer = setInterval(() => {
       this.shown++;
       this.textEl.textContent = this.full.slice(0, this.shown);

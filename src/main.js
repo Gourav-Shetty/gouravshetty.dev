@@ -400,12 +400,31 @@ async function boot() {
   const gwName = guestwall.querySelector('#gwName');
   const gwMsg = guestwall.querySelector('#gwMsg');
   let guestwallOpen = false;
+  let guestwallReturnFocus = null;
+  const gwFocusables = () => [...gwForm.querySelectorAll('input, textarea, button')];
   function setGuestwallOpen(v) {
     guestwallOpen = v;
     guestwall.classList.toggle('open', v);
-    if (v) { character.enabled = false; gwName.focus({ preventScroll: true }); }
-    else if (mode === 'walk' && !character.isMoving) character.enabled = true;
+    if (v) {
+      character.enabled = false;
+      guestwallReturnFocus = document.activeElement;
+      gwName.focus({ preventScroll: true });
+    } else {
+      if (mode === 'walk' && !character.isMoving) character.enabled = true;
+      // hand focus back where it came from
+      if (guestwallReturnFocus?.focus) guestwallReturnFocus.focus({ preventScroll: true });
+      guestwallReturnFocus = null;
+    }
   }
+  // keep Tab inside the dialog while it is open
+  guestwall.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const items = gwFocusables();
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
   window.__guestwall = { isOpen: () => guestwallOpen, open: () => setGuestwallOpen(true), close: () => setGuestwallOpen(false) };
   guestwall.addEventListener('click', (e) => { if (e.target === guestwall) setGuestwallOpen(false); });
   guestwall.querySelector('#gwClose').addEventListener('click', () => setGuestwallOpen(false));

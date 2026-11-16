@@ -19,6 +19,11 @@ span{display:inline-block;overflow:hidden;line-height:1;font-size:inherit;font-f
   .quest{max-width:calc(100vw - 24px);white-space:normal;text-align:center;
     font-size:11rem;letter-spacing:.5rem;line-height:1.5;padding:8rem 12rem}
 }
+/* reduced motion: kill the decorative movement, keep the site usable */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .dbox .dnext{animation:none}
+}
 a{text-decoration:none}
 h1{color:#111;font-size:40rem;font-weight:700}
 button{font-family:var(--font_family)}

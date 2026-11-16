@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#f2f2f2"/>
+  <!-- ink head: the scribble ball -->
+  <g fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round">
+    <circle cx="32" cy="24" r="13"/>
+    <path d="M21 20c4-5 9 3 13-1s7 4 11 0M20 27c5 3 9-4 14 0s8-3 12 0M23 15c3 4 8-2 12 1s7-3 10 1M24 32c4-3 8 3 12-1s7 3 10 0"/>
+  </g>
+  <circle cx="32" cy="24" r="7.5" fill="#111"/>
+  <!-- body -->
+  <g fill="#111">
+    <rect x="29" y="38" width="6" height="12" rx="2.6"/>
+    <rect x="24.5" y="49" width="4" height="11" rx="2"/>
+    <rect x="35.5" y="49" width="4" height="11" rx="2"/>
+    <rect x="21" y="38.5" width="3.4" height="9" rx="1.7"/>
+    <rect x="39.6" y="38.5" width="3.4" height="9" rx="1.7"/>
+  </g>
+</svg>

@@ -16,6 +16,8 @@ export class Transition {
     this.ctx = this.canvas.getContext('2d');
     this.busy = false;
     this.progress = 0;
+    // reduced motion: no ink wipe, the page just swaps
+    this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.resize();
     addEventListener('resize', () => this.resize());
   }
@@ -61,6 +63,13 @@ export class Transition {
   }
 
   run(to) {
+    if (this.reduced) {
+      // no ink animation — swap straight through
+      this.progress = to;
+      this.paint(to);
+      if (to === 0) this.canvas.style.opacity = '0';
+      return Promise.resolve();
+    }
     return new Promise((resolve) => {
       const o = { p: this.progress };
       this.canvas.style.opacity = '1';

@@ -31,6 +31,16 @@ export class Menu {
     });
     addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.isOpen) this.close();
+      // keep Tab inside the open menu instead of wandering behind it
+      if (e.key === 'Tab' && this.isOpen) {
+        const items = [...document.querySelectorAll(
+          '.menu_main_links a, #searchInput, .menu_links a, #contactBtn, #githubLink'
+        )].filter((el) => el.offsetParent !== null);
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     });
   }
 
