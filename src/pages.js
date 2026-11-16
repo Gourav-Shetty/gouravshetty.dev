@@ -46,24 +46,74 @@ export function projectHTML(p, prev, next) {
   </div>`;
 }
 
-export function aboutHTML() {
+const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+));
+
+export function aboutHTML(about = {}, skills = []) {
+  const hobbies = (about.hobbies || []).map((h) => `
+    <div class="story_hobby">
+      <span class="story_glyph" aria-hidden="true">${esc(h.glyph)}</span>
+      <div><h3>${esc(h.title)}</h3><p>${esc(h.text)}</p></div>
+    </div>`).join('');
+  const chips = skills.map((s) =>
+    `<span class="skill_chip">${esc(s.name)}<span class="skill_n">${s.count}</span></span>`).join('');
   return `
-  <div class="article_container">
-    <div class="article_left">
-      <ul class="data_top">
-        <li><span><span><strong>About</strong></span></span></li>
-        <li><span><span>Creative developer</span></span></li>
-        <li><span><span>Realtime 3D + frontend</span></span></li>
-      </ul>
-      <ul class="data_bottom">
-        <li><span><span>Walk the gallery, click frames.</span></span></li>
-        <li><span><span>Edit public/data/projects.json</span></span></li>
-        <li><span><span>to make it yours.</span></span></li>
-      </ul>
+  <div class="story" id="story">
+    <div class="story_scroll">
+      <p class="story_kicker">About / ${esc(about.name)}</p>
+      <h1 class="story_hero">${esc(about.oneLiner)}</h1>
+      <section class="story_block">
+        <h2>Who I am</h2>
+        <p>${esc(about.intro)}</p>
+      </section>
+      <section class="story_block">
+        <h2>How I work</h2>
+        <p>${esc(about.howIWork)}</p>
+      </section>
+      <section class="story_block">
+        <h2>Off the keyboard</h2>
+        <div class="story_hobbies">${hobbies}</div>
+      </section>
+      <section class="story_block">
+        <h2>What I work with</h2>
+        <p class="story_note">Counted from the projects hanging in the gallery.</p>
+        <div class="story_skills">${chips}</div>
+      </section>
+      <footer class="story_footer">
+        <a href="/now" data-route="/now" class="story_link">What I'm doing now →</a>
+        <a href="https://github.com/Gourav-Shetty" target="_blank" rel="noopener" class="story_link">GitHub ↗</a>
+        <button type="button" class="story_contact" id="projectContact">Contact me</button>
+      </footer>
     </div>
-    <div class="article_mid"></div>
-    <div class="article_right">
-      <button class="contact_button" id="projectContact">Contact me<div class="personnageTarget"></div></button>
+  </div>`;
+}
+
+export function nowHTML(now = {}) {
+  const rows = [
+    ['Learning', now.learning],
+    ['Building', now.building],
+    ['Off-screen', now.offScreen],
+    ['Open to', now.openTo],
+  ].filter(([, text]) => text).map(([label, text]) => `
+    <div class="now_row"><h3>${esc(label)}</h3><p>${esc(text)}</p></div>`).join('');
+  return `
+  <div class="story" id="story">
+    <div class="story_scroll">
+      <p class="story_kicker">Now / updated ${esc(now.updated)}</p>
+      <h1 class="story_hero">A snapshot, not a résumé.</h1>
+      <section class="story_block">
+        <h2>Right now</h2>
+        <div class="now_rows">${rows}</div>
+      </section>
+      <section class="story_block">
+        <h2>Where this goes next</h2>
+        <p class="story_note">This page changes when I learn something new — the projects stay where they are, hanging on the walls.</p>
+      </section>
+      <footer class="story_footer">
+        <a href="/about" data-route="/about" class="story_link">More about me →</a>
+        <button type="button" class="story_contact" id="projectContact">Contact me</button>
+      </footer>
     </div>
   </div>`;
 }

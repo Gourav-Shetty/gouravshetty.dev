@@ -22,6 +22,40 @@ span{display:inline-block;overflow:hidden;line-height:1;font-size:inherit;font-f
     font-size:11rem;letter-spacing:.5rem;line-height:1.5;padding:8rem 12rem}
 }
 /* reduced motion: kill the decorative movement, keep the site usable */
+/* story pages — /about + /now: scrollable, content-first, still ink-and-paper */
+.story{position:fixed;inset:0;z-index:6;pointer-events:none;background:#f2f2f2}
+.story_scroll{position:absolute;inset:0;max-width:960px;margin:0 auto;padding:56px 28px 80px;overflow-y:auto;pointer-events:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#111 transparent}
+.story_kicker{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase;opacity:.55;margin-bottom:18px}
+.story_hero{font-family:var(--font_family);font-weight:700;font-size:clamp(24px,4vw,42px);line-height:1.15;max-width:24ch;margin:0 0 36px}
+.story_block{padding:22px 0;border-top:1px solid rgba(0,0,0,.18)}
+.story_block h2{font-family:var(--font_family);font-size:14px;text-transform:uppercase;letter-spacing:2px;margin:0 0 12px;opacity:.65}
+.story_block p{font-family:var(--font_body);font-size:clamp(15px,1.4vw,17px);line-height:1.55;max-width:62ch;margin:0}
+.story_note{font-size:13px !important;opacity:.6}
+.story_hobbies{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.story_hobby{display:flex;gap:14px;padding:16px;border:1px solid rgba(0,0,0,.25);background:rgba(255,255,255,.55)}
+.story_glyph{font-family:var(--font_family);font-size:26px;line-height:1}
+.story_hobby h3{font-family:var(--font_family);font-size:16px;margin:0 0 6px}
+.story_hobby p{font-size:14px !important}
+.story_skills{display:flex;flex-wrap:wrap;gap:8px}
+.skill_chip{font-family:ui-monospace,Menlo,monospace;font-size:13px;padding:8px 12px;border:1px solid #111;display:inline-flex;gap:8px;background:rgba(255,255,255,.6)}
+.skill_n{opacity:.45}
+.story_footer{display:flex;flex-wrap:wrap;align-items:center;gap:18px;padding:32px 0 0;border-top:1px solid rgba(0,0,0,.18)}
+.story_link{font-family:var(--font_family);font-size:15px;color:#111;border-bottom:1px solid #111;padding-bottom:3px}
+.story_contact{font-family:var(--font_family);font-size:15px;padding:10px 16px;border:1px solid #111;background:#111;color:#fff;cursor:pointer}
+.now_rows{display:grid;gap:14px}
+.now_row{display:grid;grid-template-columns:130px 1fr;gap:12px;align-items:baseline;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.12)}
+.now_row h3{font-family:var(--font_family);font-size:14px;text-transform:uppercase;letter-spacing:1px;margin:0;opacity:.6}
+.now_row p{margin:0}
+
+@media (max-width:820px){
+  .story_scroll{padding:88px 20px 70px}
+  .story_hero{font-size:clamp(21px,5.5vw,29px);margin-bottom:26px}
+  .story_hobbies{grid-template-columns:1fr}
+  .now_row{grid-template-columns:1fr;gap:6px}
+  .skill_chip{font-size:16px;padding:10px 12px}
+  .story_link,.story_contact{min-height:44px;display:inline-flex;align-items:center}
+}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   .dbox .dnext{animation:none}
@@ -160,7 +194,11 @@ body.touch .touch_actions{display:flex}
 body.menu-open .touch_actions{display:none}
 /* article pages: the stick + N/H/zoom buttons would sit on top of the copy */
 body[data-route^="/project/"] .joystick_container,
-body[data-route^="/project/"] .touch_actions{display:none !important}
+body[data-route^="/project/"] .touch_actions,
+body[data-route="/about"] .joystick_container,
+body[data-route="/about"] .touch_actions,
+body[data-route="/now"] .joystick_container,
+body[data-route="/now"] .touch_actions{display:none !important}
 .touch_actions button{width:48px;height:48px;border:1.5rem solid #111;background:#fff;color:#111;font-family:var(--font_family);font-size:18rem;border-radius:50%;cursor:pointer;opacity:.85}
 .touch_actions button:active{transform:scale(.94);opacity:1}
 

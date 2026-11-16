@@ -1,0 +1,23 @@
+{
+  "name": "Gourav R Shetty",
+  "oneLiner": "I build playful, real-time web things — pose memes, traffic sims, walkable portfolios — and I'm going deeper into the infra behind them: GPUs, cloud, MLOps.",
+  "intro": "I'm Gourav. I build playful, real-time web things — pose memes, traffic sims, walkable portfolios. Lately I'm digging into the infra behind them: GPUs, cloud, MLOps.",
+  "howIWork": "I start with the fun part — the thing that makes someone say 'wait, that works?' — then figure out the plumbing. Ship small, break things, iterate.",
+  "hobbies": [
+    {
+      "glyph": "◉",
+      "title": "PC gaming",
+      "text": "Long sessions, questionable sleep schedule, strong opinions about frame rate."
+    },
+    {
+      "glyph": "◇",
+      "title": "Badminton",
+      "text": "The one sport where I'm convinced I'm better than I actually am."
+    },
+    {
+      "glyph": "✎",
+      "title": "Sketches",
+      "text": "Bad at finishing them, weirdly good at starting fifty of them."
+    }
+  ]
+}

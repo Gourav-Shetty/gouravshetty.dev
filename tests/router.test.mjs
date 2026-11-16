@@ -39,13 +39,14 @@ after(() => {
   dom.window.close();
 });
 
-function makeRouter() {
+function makeRouter(content = {}) {
   const rendered = [];
   const router = new Router([{ uid: 'pose-meme' }], {
     transition: null,
     menu: null,
+    contact: () => {},
     setMode: (m) => rendered.push(m),
-  });
+  }, content);
   return { router, rendered };
 }
 
@@ -72,6 +73,24 @@ describe('router clicks', () => {
     await new Promise((r) => setTimeout(r, 30));
     assert.equal(dom.window.location.pathname, '/projects');
     assert.ok(rendered.includes('walk'));
+  });
+
+  it('renders /about and /now from supplied content', () => {
+    const body = { name: 'Gourav', oneLiner: 'Hello', intro: 'Intro', howIWork: 'Work', hobbies: [] };
+    const content = {
+      about: body,
+      now: { updated: '2026-11-16', learning: 'ML', openTo: 'chat' },
+      skills: [{ name: 'Python', count: 2 }],
+    };
+    const { router, rendered } = makeRouter(content);
+    router.swap('/about');
+    assert.equal(dom.window.document.body.dataset.route, '/about');
+    assert.ok(document.querySelector('.story_hero').textContent.includes('Hello'));
+    assert.ok(document.querySelector('.story_skills').textContent.includes('Python'));
+    router.swap('/now');
+    assert.equal(dom.window.document.body.dataset.route, '/now');
+    assert.ok(document.querySelector('.now_rows').textContent.includes('ML'));
+    assert.deepEqual(rendered, ['walk', 'walk']);
   });
 
   it('ignores clicks on elements that are not route links', () => {

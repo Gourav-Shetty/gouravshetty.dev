@@ -1,13 +1,14 @@
 import gsap from 'gsap';
-import { homeHTML, galleryWalkHTML, projectHTML, aboutHTML, notFoundHTML } from '../pages.js';
+import { homeHTML, galleryWalkHTML, projectHTML, aboutHTML, nowHTML, notFoundHTML } from '../pages.js';
 
 /* SPA router — their flow: menu button slides away → ink transition opens
  * (~0.7 s) → content + Prismic data swap → transition closes → entrances.
  * Input stays locked while the ink is up. */
 export class Router {
-  constructor(projects, hooks) {
+  constructor(projects, hooks, content = {}) {
     this.projects = projects;
     this.hooks = hooks;
+    this.content = content;
     this.path = location.pathname;
     this.main = document.getElementById('main');
     this.busy = false;
@@ -58,7 +59,11 @@ export class Router {
         document.getElementById('projectContact')?.addEventListener('click', () => this.hooks.contact(p));
       }
     } else if (path === '/about') {
-      this.main.innerHTML = aboutHTML();
+      this.main.innerHTML = aboutHTML(this.content.about, this.content.skills);
+      document.getElementById('projectContact')?.addEventListener('click', () => this.hooks.contact(null));
+      this.hooks.setMode('walk');
+    } else if (path === '/now') {
+      this.main.innerHTML = nowHTML(this.content.now);
       document.getElementById('projectContact')?.addEventListener('click', () => this.hooks.contact(null));
       this.hooks.setMode('walk');
     } else {
@@ -75,13 +80,19 @@ export class Router {
     if (path === '/' || path === '/projects') {
       gsap.to('#hud', { opacity: 1, duration: 0.4, delay: 0.6, overwrite: true });
     }
-    if (path.startsWith('/project/') || path === '/about') {
+    if (path.startsWith('/project/')) {
       // their article entrance: data lines rise, arrows slide in from sides
       gsap.fromTo('.data_top li span span, .data_bottom li span span',
         { y: '110%' }, { y: '0%', duration: 0.6, stagger: 0.06, delay: 0.2, ease: 'sine.out', overwrite: true });
       gsap.fromTo('.arrowL a', { x: '100%', opacity: 0 }, { x: '0%', opacity: 0.8, duration: 0.5, delay: 0.4, ease: 'sine.out', overwrite: true });
       gsap.fromTo('.arrowR a', { x: '-100%', opacity: 0 }, { x: '0%', opacity: 0.8, duration: 0.5, delay: 0.4, ease: 'sine.out', overwrite: true });
       gsap.fromTo('.contact_button', { opacity: 0 }, { opacity: 0.8, duration: 0.5, delay: 0.7, overwrite: true });
+    }
+    if (path === '/about' || path === '/now') {
+      // story pages animate their own blocks, not the article selectors
+      gsap.fromTo('.story_hero', { opacity: 0 }, { opacity: 1, duration: 0.5, delay: 0.1, overwrite: true });
+      gsap.fromTo('.story_block', { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, delay: 0.2, ease: 'sine.out', overwrite: true });
     }
   }
 

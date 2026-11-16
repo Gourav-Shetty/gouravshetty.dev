@@ -91,6 +91,7 @@ export class Menu {
     const crumbs = [{ href: '/', label: 'Home' }];
     if (path === '/projects') crumbs.push({ href: '/projects', label: 'Projects' });
     else if (path === '/about') crumbs.push({ href: '/about', label: 'About' });
+    else if (path === '/now') crumbs.push({ href: '/now', label: 'Now' });
     else if (path.startsWith('/project/')) {
       crumbs.push({ href: '/projects', label: 'Projects' });
       const p = this.projects.find((x) => x.uid === path.split('/').pop());

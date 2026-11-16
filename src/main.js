@@ -12,6 +12,7 @@ import { Dialogue, INTRO, introFor } from './core/dialogue.js';
 import { createQuests, questText } from './core/quests.js';
 import { exitTarget } from './core/doors.js';
 import { isPhone } from './core/device.js';
+import { skillsFrom } from './core/skills.js';
 import { Character } from './world/Character.js';
 
 import { projectHTML } from './pages.js';
@@ -32,9 +33,16 @@ async function boot() {
   await loader.appear();
   loader.setProgress(0.1, 'projects');
 
-  const res = await fetch('/data/projects.json');
-  if (!res.ok) throw new Error('projects.json missing');
-  const projects = await res.json();
+  const [projectsRes, aboutRes, nowRes] = await Promise.all([
+    fetch('/data/projects.json'),
+    fetch('/data/about.json'),
+    fetch('/data/now.json'),
+  ]);
+  for (const [r, name] of [[projectsRes, 'projects'], [aboutRes, 'about'], [nowRes, 'now']]) {
+    if (!r.ok) throw new Error(`${name}.json missing`);
+  }
+  const [projects, about, now] = await Promise.all([projectsRes, aboutRes, nowRes].map((r) => r.json()));
+  const skills = skillsFrom(projects);
   loader.setProgress(0.3, 'screenshots');
 
   // project artwork / repo screenshots for the frames that have them
@@ -188,7 +196,7 @@ async function boot() {
         character.walkIn();
       }
     },
-  });
+  }, { about, now, skills });
 
   // their walk-through doors: home deep end → /projects (their home exit
   // leads into the gallery); either end of the long hall → home. The
