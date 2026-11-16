@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { isPhone } from './device.js';
 
 let instance = null;
 
@@ -7,7 +8,7 @@ export class Experience {
     if (instance) return instance;
     instance = this;
     this.canvas = canvas;
-    this.isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+    this.isTouch = isPhone;
     if (this.isTouch) document.body.classList.add('touch');
 
     this.scene = new THREE.Scene();
@@ -23,7 +24,10 @@ export class Experience {
     this.renderer.toneMappingExposure = 1.75;
     this.renderer.setClearColor(0x000000);
     this.renderer.setSize(innerWidth, innerHeight);
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    // phones: cap DPR to 1.5 (~44% fewer fragments than DPR2) — the single
+    // biggest GPU saving on a DPR3 screen with ACES + 6 lights + soft shadows
+    this.maxDpr = this.isTouch ? 1.5 : 2;
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, this.maxDpr));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -44,19 +48,37 @@ export class Experience {
   }
 
   resize() {
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, this.maxDpr));
     this.camera.aspect = innerWidth / innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(innerWidth, innerHeight);
   }
 
   start() {
-    this.renderer.setAnimationLoop(() => {
+    this._running = true;
+    this._loop = () => {
       const d = this.clock.getDelta();
       this.time.delta = Math.min(d, 0.05);
       this.time.elapsed += this.time.delta;
       for (const fn of this.listeners) fn(this.time);
       this.renderer.render(this.scene, this.camera);
-    });
+    };
+    this.renderer.setAnimationLoop(this._loop);
     requestAnimationFrame(() => this.canvas.classList.add('ready'));
+  }
+
+  // pause the GL loop when the menu covers the canvas or the tab is hidden
+  pause() {
+    if (!this._running) return;
+    this._running = false;
+    this.renderer.setAnimationLoop(null);
+    this.clock.stop();
+  }
+
+  resume() {
+    if (this._running) return;
+    this._running = true;
+    this.clock.start();
+    this.renderer.setAnimationLoop(this._loop);
   }
 }

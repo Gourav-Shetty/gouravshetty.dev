@@ -11,6 +11,7 @@ import { makeCoverTexture } from './world/coverTexture.js';
 import { Dialogue, INTRO } from './core/dialogue.js';
 import { createQuests, questText } from './core/quests.js';
 import { exitTarget } from './core/doors.js';
+import { isPhone } from './core/device.js';
 import { Character } from './world/Character.js';
 
 import { projectHTML } from './pages.js';
@@ -48,6 +49,7 @@ async function boot() {
 
   const canvas = document.getElementById('webgl');
   const exp = new Experience(canvas);
+  window.__exp = exp; // debug hook (renderer info / DPR / pause state)
   const gallery = new Gallery(exp.scene, projects);
   loader.setProgress(0.8, 'character');
 
@@ -113,7 +115,7 @@ async function boot() {
     const nnext = projects[(ni + 1) % len];
     history.pushState({}, '', `/project/${next.uid}`);
     router.path = `/project/${next.uid}`;
-    gallery.setTexture(currentFrame.art, makeCoverTexture(next));
+    gallery.setTexture(currentFrame.art, isPhone ? makeCoverTexture(next, 512, 700) : makeCoverTexture(next));
     currentUid = next.uid;
     const tmp = document.createElement('div');
     tmp.innerHTML = projectHTML(next, nprev, nnext);
@@ -203,6 +205,15 @@ async function boot() {
 
   menu = new Menu(projects);
   router.hooks.menu = menu;
+  // the fullscreen menu covers the canvas — stop rendering the hidden scene
+  const menuOpen = menu.open.bind(menu);
+  const menuClose = menu.close.bind(menu);
+  menu.open = () => { menuOpen(); exp.pause(); };
+  menu.close = () => { menuClose(); exp.resume(); };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) exp.pause();
+    else if (!menu.isOpen) exp.resume();
+  });
 
   // quests: circle stand / project open / hi — banner + X/8 circles readout
   const quests = createQuests();
@@ -221,9 +232,16 @@ async function boot() {
     addEventListener(ev, () => { lastInput = performance.now(); }, { passive: true });
   }
 
+  let dustAcc = 0;
   exp.onTick(({ delta, elapsed }) => {
     character.update(delta);
-    gallery.updateDust(elapsed || 0);
+    // the dust drift is slow — 24 Hz is indistinguishable and cuts buffer
+    // uploads by 60% on phones
+    dustAcc += delta;
+    if (dustAcc >= (exp.isTouch ? 1 / 24 : 1 / 60)) {
+      gallery.updateDust(elapsed || 0);
+      dustAcc = 0;
+    }
     // quest: standing on any circle
     if (character.openSpot && mode === 'walk') {
       quests.done.add('circle');

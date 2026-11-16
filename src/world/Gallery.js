@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { makeCoverTexture, makePlaque } from './coverTexture.js';
+import { isPhone } from '../core/device.js';
 
 export const dissolveVert = `varying vec2 vUv; void main(){ vec4 m=modelMatrix*vec4(position,1.0); gl_Position=projectionMatrix*viewMatrix*m; vUv=uv; }`;
 export const dissolveFrag = `
@@ -110,21 +111,32 @@ export class Gallery {
   }
 
   buildLights() {
-    const touch = matchMedia('(pointer: coarse)').matches || new URLSearchParams(location.search).has('touch');
+    const touch = isPhone;
     const dim = touch ? 0.72 : 1;
     this.dim = dim;
-    const hemi = new THREE.HemisphereLight(0xffffff, 0xd8d8d8, 1.15 * dim);
+    // phone GPU budget: 2 spots (not 4), 1024² shadow map (not 2048²),
+    // tighter frustum; the contact blob fakes the avatar's ground shadow
+    this.baseHemi = (touch ? 1.28 : 1.15) * dim;
+    this.baseKey = 2.0 * dim;
+    this.baseSpot = 30;
+    const hemi = new THREE.HemisphereLight(0xffffff, 0xd8d8d8, this.baseHemi);
     this.scene.add(hemi);
-    const key = new THREE.DirectionalLight(0xffffff, 2.0 * dim);
+    const key = new THREE.DirectionalLight(0xffffff, this.baseKey);
     key.position.set(2, 7, 5);
     key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048);
-    key.shadow.camera.left = -10; key.shadow.camera.right = 10;
-    key.shadow.camera.top = 10; key.shadow.camera.bottom = -10;
+    const shadowRes = touch ? 1024 : 2048;
+    key.shadow.mapSize.set(shadowRes, shadowRes);
+    key.shadow.camera.left = -8; key.shadow.camera.right = 8;
+    key.shadow.camera.top = 8; key.shadow.camera.bottom = -8;
+    key.shadow.camera.near = 1; key.shadow.camera.far = 24;
+    key.shadow.camera.updateProjectionMatrix();
     this.scene.add(key);
     const spots = [];
-    for (const [x, y, z] of [[-2.6, 4.4, 2], [2.6, 4.4, 2], [-2.6, 4.4, -6], [2.6, 4.4, -6]]) {
-      const s = new THREE.SpotLight(0xffffff, 30, 14, 0.55, 0.7);
+    const spotsToBuild = touch
+      ? [[-2.6, 4.4, 2], [2.6, 4.4, 2]]
+      : [[-2.6, 4.4, 2], [2.6, 4.4, 2], [-2.6, 4.4, -6], [2.6, 4.4, -6]];
+    for (const [x, y, z] of spotsToBuild) {
+      const s = new THREE.SpotLight(0xffffff, this.baseSpot, 14, 0.55, 0.7);
       s.position.set(x, y, z);
       s.target.position.set(x > 0 ? 4.5 : -4.5, 2.15, z);
       this.scene.add(s, s.target);
@@ -441,7 +453,7 @@ export class Gallery {
       new THREE.MeshBasicMaterial({ color: 0xffffff })
     );
     mat.position.z = 0.041;
-    const cover = new THREE.CanvasTexture(makeCoverTexture(p));
+    const cover = new THREE.CanvasTexture(isPhone ? makeCoverTexture(p, 512, 700) : makeCoverTexture(p));
     cover.colorSpace = THREE.SRGBColorSpace;
     const art = new THREE.Mesh(
       new THREE.PlaneGeometry(artW, artH),
@@ -531,7 +543,7 @@ export class Gallery {
 
   buildDust() {
     // dust motes drifting in the light — one Points cloud, animated on tick
-    const N = 260;
+    const N = isPhone ? 120 : 260;
     const pos = new Float32Array(N * 3);
     this.dustSeed = new Float32Array(N * 2);
     for (let i = 0; i < N; i++) {
@@ -542,7 +554,7 @@ export class Gallery {
       this.dustSeed[i * 2 + 1] = 0.3 + Math.random() * 0.9;
     }
     this.dustGeo = new THREE.BufferGeometry();
-    this.dustGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    this.dustGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
     this.dustBase = pos.slice();
     this.dust = new THREE.Points(this.dustGeo, new THREE.PointsMaterial({
       color: 0x777777, size: 0.022, transparent: true, opacity: 0.55, depthWrite: false,
@@ -662,9 +674,9 @@ export class Gallery {
     col(this.scene.background, on ? 0x0d0d0d : 0xf2f2f2);
     col(this.scene.fog.color, on ? 0x050505 : 0xe4e4e4);
     tw(this.scene.fog, { near: on ? 26 : 18, far: on ? 62 : 44 });
-    tw(this.lights.hemi, { intensity: (on ? 0.06 : 1.15) * this.dim });
-    tw(this.lights.key, { intensity: (on ? 0.22 : 2.0) * this.dim });
-    for (const s of this.lights.spots) tw(s, { intensity: on ? 3.2 : 30 });
+    tw(this.lights.hemi, { intensity: on ? 0.06 * this.dim : this.baseHemi });
+    tw(this.lights.key, { intensity: on ? 0.22 * this.dim : this.baseKey });
+    for (const s of this.lights.spots) tw(s, { intensity: on ? 3.2 : this.baseSpot });
     col(this.ceilMat.color, on ? 0x161616 : 0xf2f2f2);
     if (this.dust) {
       tw(this.dust.material, { opacity: on ? 0.95 : 0.55, size: on ? 0.03 : 0.022 });
@@ -674,13 +686,22 @@ export class Gallery {
   }
 
   setTexture(art, canvas) {
+    const u = art.material.uniforms;
+    const prevTex = u.u_tex.value;
+    const prevNext = u.u_next.value;
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
-    art.material.uniforms.u_next.value = tex;
-    // their paging wipe: 0→1 over 2s, texture promotes to u_tex on complete
-    gsap.fromTo(art.material.uniforms.u_progress, { value: 0 }, {
+    u.u_next.value = tex;
+    // their paging wipe: 0→1 over 2s, texture promotes to u_tex on complete.
+    // dispose the superseded textures — repeated paging used to leak GPU
+    // memory on every page turn (brutal on a phone).
+    gsap.fromTo(u.u_progress, { value: 0 }, {
       value: 1, duration: 2,
-      onComplete: () => { art.material.uniforms.u_tex.value = tex; },
+      onComplete: () => {
+        u.u_tex.value = tex;
+        if (prevTex && prevTex !== prevNext) prevTex.dispose();
+        if (prevNext && prevNext !== tex) prevNext.dispose();
+      },
     });
   }
 }

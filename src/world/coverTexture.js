@@ -18,9 +18,7 @@ export function makePlaque(p) {
   return t;
 }
 
-export function makeCoverTexture(project) {
-  const W = 740;
-  const H = 1000;
+export function makeCoverTexture(project, W = 740, H = 1000) {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d');

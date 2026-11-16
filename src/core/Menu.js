@@ -17,7 +17,9 @@ export class Menu {
     this.line = document.getElementById('menuLine');
     this.covers = {};
     for (const p of projects) {
-      try { this.covers[p.uid] = makeCoverTexture(p).toDataURL(); } catch { /* noop */ }
+      // menu previews are small — generate thumbnails, not 8 full 740×1000
+    // PNG data URLs at boot (a large startup CPU + memory cost on phones)
+    try { this.covers[p.uid] = makeCoverTexture(p, 220, 300).toDataURL('image/jpeg', 0.7); } catch { /* noop */ }
     }
     this.previewFor(this.projects[0], true);
     this.renderList('');
