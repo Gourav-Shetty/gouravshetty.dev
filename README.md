@@ -14,6 +14,8 @@ A 3D portfolio you walk through. Eight projects hang like drawings in a quiet wh
 | **Guestwall** | pin a note on the wall; notes stay in your browser |
 | **About / Now** | who I am, what I work with, what I'm learning |
 
+![The About page](docs/images/about.png)
+
 ![The long projects rail](docs/images/projects-rail.png)
 
 ## Run it
@@ -66,13 +68,6 @@ src/core/skills.js        stack counts from projects.json
 public/data/*.json        all editable content
 tests/                    content + routing + controller tests
 ```
-
-## Mobile
-
-Portrait phones get a pulled-back camera and wider field of view so the side-wall frames stay visible, a capped pixel ratio, smaller shadow map, fewer lights, and throttled dust. Touch controls use `touch-action: none` and a non-passive touch listener so a drag never turns into a page scroll.
-
-![About on a phone](docs/images/about-mobile.png)
-![Now on a phone](docs/images/now-mobile.png)
 
 ## Guestwall
 
