@@ -283,9 +283,8 @@ async function boot() {
   exp.start();
   loader.setProgress(1, 'ready');
 
-  const startPath = ['/', '/projects', '/about'].includes(location.pathname) || location.pathname.startsWith('/project/')
-    ? location.pathname
-    : '/';
+  // unknown paths must render the 404 page, not silently fall back to home
+  const startPath = location.pathname || '/';
   await router.render(startPath, true);
   await loader.disappear();
   if (startPath.startsWith('/project/')) {

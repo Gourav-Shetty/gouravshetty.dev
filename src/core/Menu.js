@@ -82,6 +82,23 @@ export class Menu {
     });
   }
 
+  // their menu shows a route trail: "Home > Gallery >"
+  setTrail(path) {
+    const trail = document.getElementById('menuTrail');
+    if (!trail) return;
+    const crumbs = [{ href: '/', label: 'Home' }];
+    if (path === '/projects') crumbs.push({ href: '/projects', label: 'Projects' });
+    else if (path === '/about') crumbs.push({ href: '/about', label: 'About' });
+    else if (path.startsWith('/project/')) {
+      crumbs.push({ href: '/projects', label: 'Projects' });
+      const p = this.projects.find((x) => x.uid === path.split('/').pop());
+      if (p) crumbs.push({ href: path, label: p.title });
+    }
+    trail.innerHTML = crumbs
+      .map((c) => `<a href="${c.href}" data-route="${c.href}">${c.label}</a>`)
+      .join(' <span>&gt;</span> ');
+  }
+
   open() {
     if (this.isOpen) return;
     this.isOpen = true;

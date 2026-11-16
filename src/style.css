@@ -1,6 +1,8 @@
 :root{
   --black:#000000; --white:#ffffff; --accent:#f13343;
   --font_family:"Josefin Sans",system-ui,sans-serif;
+  /* the reference pairs Josefin Sans headings with a serif body */
+  --font_body:"Times New Roman",Times,serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{font-size:.10976948408342481vh}
@@ -51,11 +53,14 @@ button{font-family:var(--font_family)}
 
 .article_container{width:100vw;height:100%;position:fixed;top:0;left:0;pointer-events:none;display:flex;justify-content:center;font-size:15rem;user-select:none;color:#111}
 .article_left,.article_mid,.article_right{width:100%}
-.article_mid{min-width:720rem;max-width:720rem}
+.article_mid{min-width:720rem;max-width:720rem;display:flex;flex-direction:column;justify-content:center}
+.notfound_art{width:100%;max-width:420rem;opacity:.85;align-self:center;margin-top:auto;margin-bottom:6rem;transform:translateX(-9%)}
 .article_left{display:flex;flex-direction:column;justify-content:space-between;padding:50rem 0 50rem 50rem}
 .article_left ul li,.article_right ul li{list-style:none}
 .data_top{text-align:left;max-width:400rem;margin-left:0}.data_top li{margin-bottom:2rem}.data_bottom{text-align:left;max-width:400rem;margin-left:0}.data_bottom li{margin-top:2rem}
 .article_left li span span{transform:translateY(0)}
+.data_bottom{font-family:var(--font_body);font-size:15rem;line-height:1.45}
+.guestwall_card p{font-family:var(--font_body)}
 .article_right{display:flex;flex-direction:column;justify-content:flex-end;padding:50rem 50rem 50rem 0;align-items:flex-end}
 .contact_button{position:relative;border:none;background:transparent;font-family:var(--font_family);font-size:15rem;text-align:right;padding:20rem 12rem 0 20rem;margin-right:100rem;transition:opacity .2s;opacity:.8;pointer-events:all;color:#111;cursor:pointer}
 .contact_button:hover{opacity:1}
@@ -74,6 +79,10 @@ button{font-family:var(--font_family)}
 body.menu-open .menu_close{display:block}
 body.menu-open .menu_open{display:none}
 .menu_text{height:100%;padding:50rem;display:flex;justify-content:center;mix-blend-mode:normal;top:0;left:0;opacity:0;pointer-events:none}
+.menu_trail{position:absolute;top:16rem;left:50rem;color:#fff;font-size:14rem;letter-spacing:1rem;opacity:.75}
+.menu_trail a{color:#fff;transition:opacity .2s}
+.menu_trail a:hover{opacity:.5}
+.menu_trail span{opacity:.5;margin:0 2rem}
 body.menu-open .menu_text{opacity:1;pointer-events:all}
 .search_bar{position:absolute;bottom:50rem;right:50rem;width:220rem;display:flex;column-gap:5rem;align-items:center;opacity:.9}
 .search_bar input{background:none;border:none;border-bottom:1rem solid #fff;font-family:var(--font_family);font-size:15rem;color:var(--white);caret-color:var(--white);width:100%}

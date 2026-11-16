@@ -55,7 +55,7 @@ function grainTexture(base, repeat = [10, 10]) {
   return t;
 }
 
-function textCanvas(lines, { w = 1024, h = 512, title = '', sub = 'projects', titlePx = 64, subPx = 30, noBg = false } = {}) {
+function textCanvas(lines, { w = 1024, h = 512, title = '', sub = 'projects', titlePx = 64, subPx = 30, noBg = false, bodyFont = false } = {}) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d');
@@ -72,7 +72,9 @@ function textCanvas(lines, { w = 1024, h = 512, title = '', sub = 'projects', ti
     g.font = `400 ${subPx}px "Josefin Sans", sans-serif`;
     if (sub) g.fillText(sub, x0 + 2, y); y += 60;
   }
-  g.font = '400 24px "Josefin Sans", sans-serif';
+  g.font = bodyFont
+    ? '400 26px "Times New Roman", Times, serif'
+    : '400 24px "Josefin Sans", sans-serif';
   for (const line of lines) {
     const words = line.split(' ');
     let row = '';
@@ -187,12 +189,18 @@ export class Gallery {
       }
     }
 
+    // NOTE: no entrance geometry here. The chase camera always sits 5.2
+    // units BEHIND the visitor and looks forward, so anything placed at the
+    // entrance (their "vitre" + barriere) ends up inside the lens — a black
+    // bar across the whole frame. Same in the reference: walking backwards
+    // there shows the rail, never a door. The entrance stays out of frame.
+
     // End-wall description panel
     const desc = textCanvas([
       'A walkable portfolio. Eight selected projects hang like drawings — simple frames, quiet light.',
       'Walk with WASD or arrows. Click a frame to read the project like a wall label.',
       'Everything is procedural: no model downloads, just light, rails and paper.',
-    ], { title: 'Portfolio' });
+    ], { title: 'Portfolio', bodyFont: true });
     const descMesh = this.descMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(6.4, 3.2),
       new THREE.MeshBasicMaterial({ map: desc })

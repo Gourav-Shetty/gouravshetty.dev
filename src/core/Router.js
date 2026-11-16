@@ -66,6 +66,7 @@ export class Router {
       this.hooks.setMode('walk');
     }
     this.hooks.menu?.markActive(path);
+    this.hooks.menu?.setTrail(path);
     if (!this._isPop) window.scrollTo(0, 0);
   }
 

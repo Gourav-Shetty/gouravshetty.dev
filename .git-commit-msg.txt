@@ -1,8 +1,10 @@
-feat: ship polish — favicon, social preview, reduced motion, focus handling
+feat: reference parity — serif body, breadcrumb trail, ink 404, real 404 route
 
-- /favicon.svg (ink-scribble avatar mark) + /og.jpg captured from the hall,
-  with OpenGraph/Twitter card tags so shared links preview properly
-- prefers-reduced-motion: the ink page transition swaps instantly, the
-  intro dialogue prints whole lines, CSS transitions are neutralised
-- focus handling: the guestwall dialog traps Tab inside the form and
-  returns focus to the opener; the menu overlay traps Tab too
+- body text switches to Times New Roman (the reference pairs Josefin Sans
+  headings with a serif body); the end-wall description card follows
+- the menu now shows a route trail like theirs: "Home > Projects > Pose Meme"
+- the 404 page draws an ink "404" instead of bare text, and an unknown URL
+  now renders the 404 page instead of silently falling back to home
+- removed the planned glass entrance: the chase camera (and theirs) always
+  sits ~5 units behind the visitor, so entrance geometry ends up inside the
+  lens — live-walking the reference backwards shows the same thing
