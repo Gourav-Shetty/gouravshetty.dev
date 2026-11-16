@@ -1,4 +1,4 @@
-/* Procedural ink-spread mask — mirrors their menu preview stack exactly:
+/* Procedural ink-spread mask — mirrors the menu preview stack exactly:
  * artwork <img> underneath, animated ink <canvas> on top with
  * mix-blend-mode: multiply. White ink on black reveals the art as it
  * spreads, like a drop falling in water. No video file needed. */
@@ -18,7 +18,7 @@ export class InkReveal {
   }
 
   play() {
-    // fresh random bloom on every hover, like their video restarting
+    // fresh random bloom on every hover, like the video restarting
     const n = 12 + ((Math.random() * 5) | 0);
     this.seeds = [];
     for (let i = 0; i < n; i++) {

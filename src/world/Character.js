@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 /* ------------------------------------------------------------------
  * Character controller — genuine ink-scribble 3D model & mechanics
- * Loaded from /models/personnage_opti.glb (Three r158):
+ * Loaded from /models/avatar.glb (Three r158):
  *   velocity       = isTouch ? 1.5 : 1          (× WORLD_SCALE, see below)
  *   material       = MeshBasicMaterial({color:0x000000}) — pure ink silhouette
  *   scale          = 0.22 (calibrated for our gallery dimensions)
@@ -19,11 +19,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
  * ------------------------------------------------------------------ */
 
 const WORLD_SCALE = 2.57;
-const WALK_DUR = 1.375;      // s, their walk clip
-const WALK_RATE = 5;         // their walkAction.timeScale
-const PRINT_L = 9.4;         // % — their footprintFrames
+const WALK_DUR = 1.375;      // s, the walk clip
+const WALK_RATE = 5;         // the walkAction.timeScale
+const PRINT_L = 9.4;         // % — the footprintFrames
 const PRINT_R = 56;          // %
-const FADE = 0.2;            // their fadeDuration
+const FADE = 0.2;            // the fadeDuration
 
 /* Rail stride — the /projects rail camera looks at the wall, so the
  * camera-relative walk direction carries no x and the z-lock swallows the
@@ -62,7 +62,7 @@ export class Character {
     this.camera = camera;
     this.onSelect = opts.onSelect || (() => {});
     this.isTouch = matchMedia('(pointer: coarse)').matches;
-    // their turn rate: rotateTowards(.15 desktop / .8 phone) per frame
+    // the turn rate: rotateTowards(.15 desktop / .8 phone) per frame
     this.turnRate = (this.isTouch ? 0.8 : 0.15) * 60;
     this.velocity = (this.isTouch ? 1.5 : 1) * WORLD_SCALE;
     this.bounds = { xMin: -2.9, xMax: 2.9, zMin: -12.5, zMax: 7 };
@@ -118,7 +118,7 @@ export class Character {
 
     this.actions = {};
     this.mixer = null;
-    this.loadPromise = this.loadModel('/models/personnage_opti.glb');
+    this.loadPromise = this.loadModel('/models/avatar.glb');
   }
 
   async init() {
@@ -245,7 +245,7 @@ export class Character {
       let dz = ((clientY - r.top) / r.height - 0.5) * 2;
       const d = Math.hypot(dx, dz);
       if (d > 1) { dx /= d; dz /= d; }
-      // their deadzone (.1): a resting thumb must not drift
+      // the deadzone (.1): a resting thumb must not drift
       if (d < 0.1) { dx = 0; dz = 0; }
       this.joy = {
         active: d >= 0.1, dx, dz,
@@ -289,7 +289,7 @@ export class Character {
     }
   }
 
-  // Verbatim direction table from their directionOffset()
+  // Verbatim direction table from the directionOffset()
   directionOffset(k) {
     if (this.isTouch && this.joy.distance > 0) return -this.joy.angle + Math.PI * 0.5;
     if (k.keys || k.arrowdown) {
@@ -541,7 +541,7 @@ export class Character {
     }
     this.camera.lookAt(this._look);
 
-    // focus on a phone: the reference widens to 50, but our portrait view
+    // focus on a phone: the phone view widens to 50, but our portrait view
     // needs a little more to fit the wide frame without clipping its borders
     const fovT = this.focusMode && this.isTouch ? 58 : this.isTouch ? 55 : 35;
     if (Math.abs(this.camera.fov - fovT) > 0.05) {

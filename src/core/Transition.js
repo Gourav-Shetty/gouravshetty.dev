@@ -1,8 +1,8 @@
 import gsap from 'gsap';
 
-/* Scribble-ink page transition, same role as their Pb overlay:
+/* Scribble-ink page transition, same role as the Pb overlay:
  * black ink closes over the screen (~0.7 s), content swaps, ink opens.
- * 2D canvas blob field instead of their 500-tube GL scene — same feel,
+ * 2D canvas blob field instead of the 500-tube GL scene — same feel,
  * no extra GL context. Blocks input while running. */
 export class Transition {
   constructor() {

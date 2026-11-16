@@ -5,10 +5,10 @@ import { Gallery } from '../src/world/Gallery.js';
 
 /* These guard two real crashes from the build-out:
  *  - the guestwall circle has project:null → spotFor() must not throw
- *  - the walking direction table is a verbatim port of the reference's
+ *  - the walking direction table is a port of the
  *    directionOffset(), so it is pinned here against drift. */
 
-describe('direction table (reference directionOffset)', () => {
+describe('direction table (directionOffset)', () => {
   const off = (keys) => Character.prototype.directionOffset.call({ isTouch: false }, keys);
 
   it('walks forward with W / up', () => {
@@ -23,7 +23,7 @@ describe('direction table (reference directionOffset)', () => {
     assert.equal(off({ arrowleft: true }), -Math.PI / 2);
   });
 
-  it('diagonals keep the reference angles', () => {
+  it('diagonals keep the diagonal angles', () => {
     assert.equal(off({ keyw: true, keyd: true }), Math.PI / 4 + Math.PI / 2);
     assert.equal(off({ keyw: true, keya: true }), -Math.PI / 4 - Math.PI / 2);
     assert.equal(off({ keys: true, keyd: true }), Math.PI / 4);

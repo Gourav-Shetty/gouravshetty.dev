@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { homeHTML, galleryWalkHTML, projectHTML, aboutHTML, nowHTML, notFoundHTML } from '../pages.js';
 
-/* SPA router — their flow: menu button slides away → ink transition opens
+/* SPA router — the flow: menu button slides away → ink transition opens
  * (~0.7 s) → content + Prismic data swap → transition closes → entrances.
  * Input stays locked while the ink is up. */
 export class Router {
@@ -43,7 +43,7 @@ export class Router {
       this.main.innerHTML = homeHTML();
       this.hooks.setMode('walk');
     } else if (path === '/projects') {
-      // the long exhibition hall — 3D only, no overlay (their /gallery walk)
+      // the long exhibition hall — 3D only, no overlay (the /gallery walk)
       this.main.innerHTML = galleryWalkHTML();
       this.hooks.setMode('walk');
     } else if (path.startsWith('/project/')) {
@@ -81,7 +81,7 @@ export class Router {
       gsap.to('#hud', { opacity: 1, duration: 0.4, delay: 0.6, overwrite: true });
     }
     if (path.startsWith('/project/')) {
-      // their article entrance: data lines rise, arrows slide in from sides
+      // the article entrance: data lines rise, arrows slide in from sides
       gsap.fromTo('.data_top li span span, .data_bottom li span span',
         { y: '110%' }, { y: '0%', duration: 0.6, stagger: 0.06, delay: 0.2, ease: 'sine.out', overwrite: true });
       gsap.fromTo('.arrowL a', { x: '100%', opacity: 0 }, { x: '0%', opacity: 0.8, duration: 0.5, delay: 0.4, ease: 'sine.out', overwrite: true });
@@ -89,7 +89,7 @@ export class Router {
       gsap.fromTo('.contact_button', { opacity: 0 }, { opacity: 0.8, duration: 0.5, delay: 0.7, overwrite: true });
     }
     if (path === '/about' || path === '/now') {
-      // story pages animate their own blocks, not the article selectors
+      // story pages animate the own blocks, not the article selectors
       gsap.fromTo('.story_hero', { opacity: 0 }, { opacity: 1, duration: 0.5, delay: 0.1, overwrite: true });
       gsap.fromTo('.story_block', { y: 16, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, delay: 0.2, ease: 'sine.out', overwrite: true });

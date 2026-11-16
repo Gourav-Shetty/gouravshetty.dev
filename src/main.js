@@ -74,7 +74,7 @@ async function boot() {
   await character.init();
   character.gallery = gallery;
 
-  // Projected "See details" button — their gallery_link: HTML pinned over
+  // Projected "See details" button — the gallery_link: HTML pinned over
   // the nearest frame within range, hidden otherwise / in focus / menu.
   const frameLink = document.createElement('button');
   frameLink.className = 'gallery_link frame-zoom-link big_link';
@@ -107,7 +107,7 @@ async function boot() {
   let night = false;
   let currentUid = null;
 
-  // In-frame arrow paging — their arrows flip whole pages, but here only the
+  // In-frame arrow paging — the arrows flip whole pages, but here only the
   // frame content dissolves (ink u_tex→u_next) and the wall labels swap.
   // Capture phase + stopPropagation keeps Router's full transition out.
   document.addEventListener('click', (e) => {
@@ -158,9 +158,9 @@ async function boot() {
         currentUid = null;
         // hall swap when the route moved between the home hall and the long
         // /projects rail — teleport + camera snap happen under the ink.
-        // Entering /projects ALWAYS repositions onto its entry point (theirs:
+        // Entering /projects ALWAYS repositions onto its entry point (thes:
         // the frame you just read, its circle) — article pages move the
-        // character to their stand spot, so re-sync on every entry.
+        // character to the stand spot, so re-sync on every entry.
         const inLong = router.path === '/projects';
         if (inLong) {
           gallery.setHall('long');
@@ -198,9 +198,9 @@ async function boot() {
     },
   }, { about, now, skills });
 
-  // their walk-through doors: home deep end → /projects (their home exit
+  // the walk-through doors: home deep end → /projects (the home exit
   // leads into the gallery); either end of the long hall → home. The
-  // character walks through the line, ink covers the swap (their
+  // character walks through the line, ink covers the swap (the
   // simulateLinkClick + 2s anti-spam gate → ours: spent-door arming).
   character.exitCheck = () => {
     if (mode !== 'walk' || router.busy || menu.isOpen) return null;
@@ -256,7 +256,7 @@ async function boot() {
       if (character.openSpot.project?.uid) quests.circles.add(character.openSpot.project.uid);
       renderQuests();
     }
-    // Standing-circle zoom link — their gallery_link: pinned above the open
+    // Standing-circle zoom link — the gallery_link: pinned above the open
     // frame while the visitor stands on its circle. Click routes to project.
     const spot = character.openSpot;
     const onWalkPage = router.path === '/' || router.path === '/projects';
@@ -302,7 +302,7 @@ async function boot() {
     guestLink.style.left = `${gx}px`;
     guestLink.style.top = `${gy}px`;
     guestLink.classList.toggle('link_open', gshow);
-    // HUD hides while zoomed or after 7 s idle — clean strolling like theirs.
+    // HUD hides while zoomed or after 7 s idle — clean strolling like thes.
     const hud = document.getElementById('hud');
     if (hud && !router.busy) {
       const idle = performance.now() - lastInput > 7000 && performance.now() - bootT > 9000;
@@ -374,7 +374,7 @@ async function boot() {
   addEventListener('keydown', (e) => {
     if ((e.key === 'h' || e.key === 'H') && !e.target.closest('input')) replayIntro();
   });
-  // Enter opens the zoomed project — their HUD reads "See details [Enter]".
+  // Enter opens the zoomed project — the HUD reads "See details [Enter]".
   // (Clicking the pinned button already worked; keys never had a handler.)
   addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;

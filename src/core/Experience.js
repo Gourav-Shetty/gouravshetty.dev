@@ -15,10 +15,10 @@ export class Experience {
     this.scene.background = new THREE.Color(0x000000);
     this.scene.fog = new THREE.Fog(0x000000, 12, 34);
 
-    this.camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 100); // their flat 35
+    this.camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 100); // the flat 35
     this.camera.position.set(0, 1.6, 8);
 
-    // their renderer: ACESFilmic + exposure 1.75, high-performance, AA, shadows
+    // the renderer: ACESFilmic + exposure 1.75, high-performance, AA, shadows
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.75;

@@ -133,7 +133,7 @@ export class Dialogue {
   advance() {
     this.ensureAudio();
     if (this.shown < this.full.length) {
-      // first press completes the page instantly (their Z-skip)
+      // first press completes the page instantly (the Z-skip)
       clearInterval(this.timer);
       this.shown = this.full.length;
       this.textEl.textContent = this.full;

@@ -119,7 +119,7 @@ export function nowHTML(now = {}) {
 }
 
 export function notFoundHTML() {
-  // theirs loads a 404.png drawing; ours is an ink sketch of the same idea
+  // an ink sketch of the same idea
   const scribble = `
     <svg class="notfound_art" viewBox="0 0 420 220" role="img" aria-label="404 — page not found">
       <g fill="none" stroke="#111" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">

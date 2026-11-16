@@ -1,7 +1,7 @@
 :root{
   --black:#000000; --white:#ffffff; --accent:#f13343;
   --font_family:"Josefin Sans",system-ui,sans-serif;
-  /* the reference pairs Josefin Sans headings with a serif body */
+  /* Josefin Sans headings with a serif body */
   --font_body:"Times New Roman",Times,serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -130,7 +130,7 @@ body.menu-open .menu_text{opacity:1;pointer-events:all}
 .menu_links::-webkit-scrollbar{display:none}
 .menu_links ul li{list-style:none;margin-bottom:4rem}
 .menu_links ul li a{color:var(--white);font-size:15rem;display:block;margin-left:5rem;padding-bottom:2rem}
-/* hovered artwork gets the white ink-bar, like their menu */
+/* hovered artwork gets the white ink-bar, like the menu */
 .menu_links ul li a:hover{background:#fff;color:#000;border-radius:12rem;opacity:1}
 .menu_canvas_container{position:absolute;top:0;right:0;height:100%;width:60%;padding:50rem;display:flex;justify-content:center;align-items:center;pointer-events:none}
 .menu_preview{width:min(60vh,90%);aspect-ratio:1/1;background:#000 center/cover no-repeat;border:1rem solid #333;position:relative;overflow:hidden}

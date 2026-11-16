@@ -1,45 +1,87 @@
-# Portfolio Gallery (thevertmenthe-style, for projects)
+# Gourav R Shetty — walkable portfolio
 
-Walkable 3D portfolio. Reverse-engineered from `thevertmenthe.dault-lafon.fr` IA, rebuilt with your projects instead of artworks.
+A 3D portfolio you walk through. Eight projects hang like drawings in a quiet white gallery; stand on a circle to see one up close, then open its page. There's a long exhibition rail, a guestwall you can sign, an About page, and a living Now page.
 
-## Run
+![The home hall with project frames and the scribble avatar](docs/images/home-hall.png)
+
+## See it
+
+| | |
+|---|---|
+| **Home hall** | eight frames, standing circles, ink footprints, night mode |
+| **Projects rail** | a long single-wall exhibition you walk end to end |
+| **Project pages** | the artwork fills the view, with the story beside it |
+| **Guestwall** | pin a note on the wall; notes stay in your browser |
+| **About / Now** | who I am, what I work with, what I'm learning |
+
+![The long projects rail](docs/images/projects-rail.png)
+
+## Run it
 
 ```sh
 npm install
-npm run dev      # open the Vite URL
-npm test         # validates projects.json
-npm run build    # production build in dist/
+npm run dev       # open the printed URL
+npm test          # checks the content files and app wiring
+npm run build     # production build in dist/
 ```
+
+Requires Node 18+. No API keys or backend.
 
 ## Make it yours
 
-1. Edit `public/data/projects.json` — 8 entries max map to the 8 frames (title, tagline, stack, year, role, description, link, color, pattern).
-2. Edit `public/data/about.json` (bio, hobbies) and `public/data/now.json` (what you're learning/building) — these drive `/about` and `/now`. The skills block is counted from the projects automatically.
-3. Edit contact email in `src/core/Menu.js` + `src/main.js` (`hello@example.com`).
-3. Edit GitHub URL in `index.html` (`#githubLink`).
-4. Covers are procedural (`src/world/coverTexture.js` patterns: waves/grid/dots/rings/diagonal/bars/triangles/cross). Swap `makeCoverTexture` for real image textures when ready.
+1. **`public/data/projects.json`** — up to eight projects. Each entry has a `uid`, `title`, `tagline`, `stack`, `year`, `role`, `description`, `link`, `linkLabel`, optional `image`/`shot`, `color`, `pattern`.
+2. **`public/data/about.json`** — your name, one-liner, intro, how you work, hobbies.
+3. **`public/data/now.json`** — what you're learning, building, into, and open to.
+4. **`src/main.js`** — contact email and GitHub link.
+5. **`public/models/avatar.glb`** — optional avatar model (gitignored; keep your own copy locally). Without it, the gallery still runs.
+
+The skills block on `/about` is counted from `projects.json` automatically — no second list to maintain.
+
+![A project page](docs/images/project-page.png)
+
+## Controls
+
+| Desktop | Phone |
+|---|---|
+| `WASD` / arrows to walk | on-screen joystick, analog speed |
+| Click a frame or press `Enter` on a circle | tap **See details** or a frame |
+| `Esc` from a project → back to the circle | back button or the arrow controls |
+| `N` night shift, `H` replay intro, wheel to zoom | on-screen `N`, `H`, zoom buttons |
+| `Menu` button or `Esc` | `MENU` button |
+
+The deep end of the home hall walks you into `/projects`; either end of the rail walks you home.
 
 ## Structure
 
 ```
-index.html            → loader, menu, canvas shell
-src/main.js           → boot: loader → data → scene → router
-src/pages.js          → home / projects / project / about / now / 404 templates
-src/core/Experience.js→ three r158 singleton + loop
-src/core/Router.js    → /, /projects, /project/:uid, /about, /now SPA
-src/core/skills.js    → skills counted from projects[].stack
-src/core/Menu.js      → fullscreen menu + search
-src/core/Loader.js    → % loader
-src/world/Gallery.js  → room + 8 shader frames + lights
-src/world/Character.js→ capsule avatar, WASD/arrows/joystick, footprints, follow-cam
-src/world/coverTexture.js → canvas covers
-public/data/projects.json → your projects
-public/data/about.json    → bio + hobbies
-public/data/now.json      → living "now" snapshot
-docs/ideas/personal-layer.md → why these pages and what's deliberately out
-tests/projects.test.mjs  → content contract tests
+index.html                shell, loader, menu, canvas
+src/main.js               boot: load JSON → scene → router → tick
+src/pages.js              home / rail / project / about / now / 404 templates
+src/core/Router.js        SPA routes + ink transitions
+src/core/Menu.js          fullscreen menu, search, breadcrumbs
+src/world/Gallery.js      rooms, frames, rings, dust, lights
+src/world/Character.js    avatar, walking, camera, input
+src/world/coverTexture.js procedural covers and plaques
+src/core/skills.js        stack counts from projects.json
+public/data/*.json        all editable content
+tests/                    content + routing + controller tests
 ```
 
-## Controls
+## Mobile
 
-Desktop: `WASD` / arrows to walk, click a frame to open. Mobile: on-screen joystick. `menu` button or `Esc` for menu.
+Portrait phones get a pulled-back camera and wider field of view so the side-wall frames stay visible, a capped pixel ratio, smaller shadow map, fewer lights, and throttled dust. Touch controls use `touch-action: none` and a non-passive touch listener so a drag never turns into a page scroll.
+
+![About on a phone](docs/images/about-mobile.png)
+![Now on a phone](docs/images/now-mobile.png)
+
+## Guestwall
+
+Press `G` on a walk page (or tap the wall's circle) to pin a note. Notes are stored in `localStorage` in the visitor's browser; nothing is uploaded.
+
+![Guestwall](docs/images/guestwall.png)
+
+## Deploy
+
+Static site. `npm run build` produces `dist/`; any static host works. `vercel.json` enables deep links by rewriting requests to `index.html`.
+
+Built with Three.js, GSAP and Vite.

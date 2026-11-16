@@ -2,7 +2,7 @@ import gsap from 'gsap';
 import { makeCoverTexture } from '../world/coverTexture.js';
 import { InkReveal } from './inkReveal.js';
 
-/* Fullscreen menu — their choreography: main links stagger up, divider
+/* Fullscreen menu — the choreography: main links stagger up, divider
  * line grows 0→100%, artwork links stagger, ink preview blooms in.
  * Hovering an artwork restarts the ink-drop reveal over its cover. */
 export class Menu {
@@ -53,7 +53,7 @@ export class Menu {
     if (this.previewImg.getAttribute('src') !== url) {
       this.previewImg.src = url;
     }
-    // restart the ink drop on every hover, like their video scrub
+    // restart the ink drop on every hover, like the video scrub
     if (instant) this.ink.fill();
     else this.ink.play();
   }
@@ -84,7 +84,7 @@ export class Menu {
     });
   }
 
-  // their menu shows a route trail: "Home > Gallery >"
+  // the menu shows a route trail: "Home > Gallery >"
   setTrail(path) {
     const trail = document.getElementById('menuTrail');
     if (!trail) return;

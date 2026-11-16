@@ -1,4 +1,4 @@
-/* One definition of "phone" for the whole app. The reference decides once at
+/* One definition of "phone" for the whole app. The decides once at
  * boot from `matchMedia('(max-width: 820px)')`; we add ?touch=1 so desktop can
  * exercise the same path. Keeping a single flag avoids the old split where
  * the joystick was visible but Character thought it was a desktop. */

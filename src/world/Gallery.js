@@ -35,7 +35,7 @@ function noiseCanvas() {
 }
 
 // soft plaster/floor grain — enough tonal variation to read against the
-// page background (their wall uses plaster PBR textures for the same job)
+// page background (the wall uses plaster PBR textures for the same job)
 function grainTexture(base, repeat = [10, 10]) {
   const c = document.createElement('canvas');
   c.width = 256; c.height = 256;
@@ -203,8 +203,8 @@ export class Gallery {
 
     // NOTE: no entrance geometry here. The chase camera always sits 5.2
     // units BEHIND the visitor and looks forward, so anything placed at the
-    // entrance (their "vitre" + barriere) ends up inside the lens — a black
-    // bar across the whole frame. Same in the reference: walking backwards
+    // entrance (the "vitre" + barriere) ends up inside the lens — a black
+    // bar across the whole frame; walking backwards there shows a rail
     // there shows the rail, never a door. The entrance stays out of frame.
 
     // End-wall description panel
@@ -220,8 +220,8 @@ export class Gallery {
     descMesh.position.set(0, 2.7, -14.9);
     room.add(descMesh);
 
-    // Wayfinding — theirs hangs "Gallery" sheets near the walk start, ON the
-    // side walls (their glTF anchors galleryL/R: x=±25, z=2 of their .08-scaled
+    // Wayfinding — thes hangs "Gallery" sheets near the walk start, ON the
+    // side walls (the glTF anchors galleryL/R: x=±25, z=2 of the .08-scaled
     // room → x=±2, z≈0.16, y 1.04, ry ±90° face-into-room; 2×1 plane .3 with
     // mirrored elbow-arrow strokes, black). Nothing on the end wall but the
     // description. Ours: same treatment, word "Projects", our scale.
@@ -232,7 +232,7 @@ export class Gallery {
       const g = c.getContext('2d');
       g.strokeStyle = '#111';
       g.fillStyle = '#111';
-      // elbow path, mirrored for the right sheet (their panneau_galerieL/R)
+      // elbow path, mirrored for the right sheet (the panneau_galerieL/R)
       const pts = left
         ? [[60, 330], [253, 432], [253, 318], [630, 318]]
         : [[964, 330], [771, 432], [771, 318], [394, 318]];
@@ -242,7 +242,7 @@ export class Gallery {
       g.moveTo(pts[0][0], pts[0][1]);
       for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
       g.stroke();
-      // the word hugs the far edge of the elbow, like theirs
+      // the word hugs the far edge of the elbow, like thes
       g.font = '700 195px "Josefin Sans", sans-serif';
       const w = g.measureText('Projects').width;
       g.fillText('Projects', left ? 968 - w : 56, 296);
@@ -477,9 +477,9 @@ export class Gallery {
     group.add(plaque);
     this.hallGroup.add(group);
     this.frames.push({ group, art, plaque, project: p, h, hall: this.hallName });
-    // Standing circle for this frame — their viewing spots: one ring per
+    // Standing circle for this frame — the viewing spots: one ring per
     // artwork, camera dollies in while the visitor stands on it. Home spots
-    // sit 1.8 off the wall; their /gallery circles sit right on the rail.
+    // sit 1.8 off the wall; the /gallery circles sit right on the rail.
     const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(group.quaternion).setY(0).normalize();
     const centerLocal = group.position.clone().addScaledVector(normal, opts.circleDist ?? 1.8);
     centerLocal.y = 0;
@@ -488,7 +488,7 @@ export class Gallery {
     ring.rotation.x = -Math.PI / 2;
     ring.position.set(centerLocal.x, 0.015, centerLocal.z);
     this.hallGroup.add(ring);
-    // second ring — theirs lifts it 0.1 when you stand on the spot
+    // second ring — thes lifts it 0.1 when you stand on the spot
     const ring2 = new THREE.Mesh(this.ringGeo, ringMat);
     ring2.rotation.x = -Math.PI / 2;
     ring2.position.set(centerLocal.x, 0.025, centerLocal.z);
@@ -576,10 +576,10 @@ export class Gallery {
   }
 
   buildLongHall() {
-    // Their /gallery page, at our world scale: one long wall, all frames in
+    // The /gallery page, at our world scale: one long wall, all frames in
     // a single row on it (x = start + i*spacing, heights staggered two-row),
     // character locked to the rail z=0, wayfinding panels at both ends,
-    // exits at either end of the walk bound. size = n*spacing + 12 (theirs:
+    // exits at either end of the walk bound. size = n*spacing + 12 (thes:
     // articles*1.2 + 12). Lives at x+200 — fog hides it from the home hall.
     this.hallName = 'long';
     this.offset = 200;
@@ -594,7 +594,7 @@ export class Gallery {
     g.position.x = this.offset;
     this.hallGroup = g;
     const len = 4 + this.longSize + 8;
-    const cx = this.longSize * 0.5 - 2; // their roomGroup centering
+    const cx = this.longSize * 0.5 - 2; // the roomGroup centering
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(len, 11),
       new THREE.MeshStandardMaterial({ map: grainTexture('#e9e9e9', [10, 3]), roughness: 0.9 })
@@ -613,11 +613,11 @@ export class Gallery {
     for (let i = 0; i < n; i++) {
       const y = 2.15;
       this.addFrame(this.projects[i], 1.5 + i * spacing, y, -1.2, 0, size, {
-        circleDist: 1.2,  // circle lands on the rail itself (theirs z+=0.5)
-        radius: 0.62,     // their 0.25 trigger, scaled to our world
+        circleDist: 1.2,  // circle lands on the rail itself (thes z+=0.5)
+        radius: 0.62,     // the 0.25 trigger, scaled to our world
       });
     }
-    // wayfinding panels: theirs are panneau_homeL/galerieR at the start,
+    // wayfinding panels: thes are panneau_homeL/galerieR at the start,
     // panneau_homeR/galerieL at the far end — text + elbow arrows drawn
     // straight onto the wall (transparent canvas, no card)
     const panel = (title, sub, x) => {
@@ -657,7 +657,7 @@ export class Gallery {
   }
 
   setSpotOpen(spot, open) {
-    // their dc: standing on a ring lifts its twin ring 0.1 up over .5s
+    // the dc: standing on a ring lifts its twin ring 0.1 up over .5s
     if (!spot || !spot.ring2) return;
     gsap.to(spot.ring2.position, {
       y: open ? 0.115 : 0.025, duration: 0.5, ease: 'sine.inOut', overwrite: true,
@@ -692,7 +692,7 @@ export class Gallery {
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     u.u_next.value = tex;
-    // their paging wipe: 0→1 over 2s, texture promotes to u_tex on complete.
+    // the paging wipe: 0→1 over 2s, texture promotes to u_tex on complete.
     // dispose the superseded textures — repeated paging used to leak GPU
     // memory on every page turn (brutal on a phone).
     gsap.fromTo(u.u_progress, { value: 0 }, {
