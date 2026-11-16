@@ -501,14 +501,17 @@ export class Character {
     }
 
     if (this.focusMode && this.focusPos && this.focusN) {
-      this.camPos.copy(this.focusPos).addScaledVector(this.focusN, this.isTouch ? 3.7 : 4.05);
+      // portrait: the frame is wider than the screen at the desktop dolly —
+      // back off so the whole artwork (and its white mat) fits, not just the
+      // black top/bottom borders
+      this.camPos.copy(this.focusPos).addScaledVector(this.focusN, this.isTouch ? 6.2 : 4.05);
       this.camPos.y = this.focusPos.y;
       this.target.copy(this.focusPos);
       this.target.y = this.focusPos.y;
       this.updateFocusPosition();
     } else if (this.openSpot) {
-      this.camPos.copy(this.openSpot.artPos).addScaledVector(this.openSpot.normal, this.isTouch ? 4.8 : 5.25);
-      this.camPos.y = 2.05;
+      this.camPos.copy(this.openSpot.artPos).addScaledVector(this.openSpot.normal, this.isTouch ? 6.2 : 5.25);
+      this.camPos.y = this.isTouch ? 2.05 : 1.3;
       this.target.copy(this.openSpot.artPos);
       this.target.y = 2.05;
     } else if (this.railMode) {
@@ -538,7 +541,9 @@ export class Character {
     }
     this.camera.lookAt(this._look);
 
-    const fovT = this.focusMode && this.isTouch ? 50 : this.isTouch ? 55 : 35;
+    // focus on a phone: the reference widens to 50, but our portrait view
+    // needs a little more to fit the wide frame without clipping its borders
+    const fovT = this.focusMode && this.isTouch ? 58 : this.isTouch ? 55 : 35;
     if (Math.abs(this.camera.fov - fovT) > 0.05) {
       this.camera.fov += (fovT - this.camera.fov) * Math.min(1, dt * 4);
       this.camera.updateProjectionMatrix();
@@ -662,7 +667,7 @@ export class Character {
       .applyQuaternion(f.art.getWorldQuaternion(new THREE.Quaternion()))
       .setY(0).normalize();
 
-    this.camera.fov = this.isTouch ? 50 : 35;
+    this.camera.fov = this.isTouch ? 58 : 35;
     this.camera.updateProjectionMatrix();
     this.snapCam = true;
 

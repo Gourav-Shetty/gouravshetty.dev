@@ -158,6 +158,9 @@ body.touch input,body.touch textarea{font-size:16px} /* iOS auto-zoom guard */
 .touch_actions{position:fixed;right:28rem;bottom:32rem;display:none;flex-direction:column;gap:10rem;z-index:12}
 body.touch .touch_actions{display:flex}
 body.menu-open .touch_actions{display:none}
+/* article pages: the stick + N/H/zoom buttons would sit on top of the copy */
+body[data-route^="/project/"] .joystick_container,
+body[data-route^="/project/"] .touch_actions{display:none !important}
 .touch_actions button{width:48px;height:48px;border:1.5rem solid #111;background:#fff;color:#111;font-family:var(--font_family);font-size:18rem;border-radius:50%;cursor:pointer;opacity:.85}
 .touch_actions button:active{transform:scale(.94);opacity:1}
 
