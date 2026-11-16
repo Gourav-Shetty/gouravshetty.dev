@@ -10,6 +10,7 @@ import { Gallery } from './world/Gallery.js';
 import { makeCoverTexture } from './world/coverTexture.js';
 import { Dialogue, INTRO } from './core/dialogue.js';
 import { createQuests, questText } from './core/quests.js';
+import { exitTarget } from './core/doors.js';
 import { Character } from './world/Character.js';
 
 import { projectHTML } from './pages.js';
@@ -193,10 +194,7 @@ async function boot() {
   // simulateLinkClick + 2s anti-spam gate → ours: spent-door arming).
   character.exitCheck = () => {
     if (mode !== 'walk' || router.busy || menu.isOpen) return null;
-    const p = character.root.position;
-    if (router.path === '/') return p.z < character.bounds.zMin + 0.15 ? '/projects' : null;
-    if (router.path === '/projects') return (p.x < gallery.railMin + 0.5 || p.x > gallery.exitX - 0.5) ? '/' : null;
-    return null;
+    return exitTarget(router.path, character.root.position, character.bounds, gallery);
   };
   character.onExit = (target) => {
     history.pushState({}, '', target);

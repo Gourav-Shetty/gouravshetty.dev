@@ -1,0 +1,13 @@
+test: cover router clicks, walking direction, rail stride and door lines
+
+Adds jsdom-based regression tests for the two crashes this build-out hit,
+plus a pure module for the door lines:
+
+- router clicks: a plain button click must NOT be preventDefault-ed (the
+  body data-route attribute used to swallow every click in the app and kill
+  form submits) while a[data-route] links still route
+- character: the reference directionOffset() table is pinned, and the
+  guestwall circle (project: null) must not break spotFor()
+- doors: home deep end → /projects, both rail ends → /, everything else quiet
+- rail stride: on the /projects rail the stride is one axis — W/↑/D→ deeper,
+  S/↓/A← back — so strafing works again instead of standing still

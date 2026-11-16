@@ -25,6 +25,19 @@ const PRINT_L = 9.4;         // % — their footprintFrames
 const PRINT_R = 56;          // %
 const FADE = 0.2;            // their fadeDuration
 
+/* Rail stride — the /projects rail camera looks at the wall, so the
+ * camera-relative walk direction carries no x and the z-lock swallows the
+ * step (W walked in place). The rail is one axis: forward = deeper into the
+ * hall (W/↑ or D/→, screen-right is +x), back = toward the entrance
+ * (S/↓ or A/←). Returns the x component of the travel direction. */
+export function railStride(k) {
+  const forward = k.keyw || k.arrowup || k.keyd || k.arrowright;
+  const back = k.keys || k.arrowdown || k.keya || k.arrowleft;
+  if (forward) return -1; // travel = -walkDir → -x of walkDir = +x travel
+  if (back) return 1;
+  return 0;
+}
+
 function soleTexture() {
   // black ink blots on transparency (footprint ink stamp)
   const c = document.createElement('canvas');
@@ -378,10 +391,7 @@ export class Character {
       this.walkDir.applyAxisAngle(this.rotateAngle, o);
 
       if (this.railMode) {
-        this.walkDir.set(
-          (this.keyPressed.keyw || this.keyPressed.arrowup) ? -1 :
-          (this.keyPressed.keys || this.keyPressed.arrowdown) ? 1 : 0, 0, 0
-        );
+        this.walkDir.set(railStride(this.keyPressed), 0, 0);
       }
 
       this.root.position.x -= this.walkDir.x * this.velocity * dt;
