@@ -11,6 +11,18 @@ export const INTRO = [
   '* Enjoy the walk!',
 ];
 
+export const INTRO_TOUCH = [
+  '* Howdy! I am GOURAV. Welcome to my projects.',
+  '* Drag the stick on the left to walk. Tap a circle on the floor to see a drawing.',
+  '* Tap SEE DETAILS to read the project. The button on the right works too.',
+  '* Tap MENU, top right, to browse everything. Tap N for night, H to hear this again.',
+  '* Tap the wall by the far end to sign the guestwall. Enjoy the walk!',
+];
+
+export function introFor(phone) {
+  return phone ? INTRO_TOUCH : INTRO;
+}
+
 export class Dialogue {
   constructor() {
     this.active = false;

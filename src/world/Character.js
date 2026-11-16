@@ -277,7 +277,7 @@ export class Character {
 
   handleClick(e) {
     if (!this.enabled) return;
-    if (e.target.closest('button,a,input,.menu_text,.article_container')) return;
+    if (e.target.closest('button,a,input,textarea,.menu_text,.article_container,#joystick,.touch_actions')) return;
     this.pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
     this.ray.setFromCamera(this.pointer, this.camera);
     const arts = [];
@@ -292,7 +292,7 @@ export class Character {
 
   teleport(x, z) {
     this.root.position.set(x, 0, z);
-    this.camera.fov = 35;
+    this.camera.fov = this.isTouch ? 55 : 35; // phones widen for portrait
     this.camera.updateProjectionMatrix();
     this.lead = 0;
     this.walkSign = 1;
@@ -394,8 +394,12 @@ export class Character {
         this.walkDir.set(railStride(this.keyPressed), 0, 0);
       }
 
-      this.root.position.x -= this.walkDir.x * this.velocity * dt;
-      this.root.position.z -= this.walkDir.z * this.velocity * dt;
+      // analog stick: walking speed follows how far the thumb is pushed
+      const speed = this.isTouch && this.joy.distance > 0
+        ? this.velocity * Math.max(0.3, this.joy.distance)
+        : this.velocity;
+      this.root.position.x -= this.walkDir.x * speed * dt;
+      this.root.position.z -= this.walkDir.z * speed * dt;
 
       if (Math.abs(this.walkDir.x) > 0.1) this.walkSign = -Math.sign(this.walkDir.x);
       this.root.position.x = THREE.MathUtils.clamp(this.root.position.x, this.bounds.xMin, this.bounds.xMax);
@@ -481,8 +485,13 @@ export class Character {
     } else if (this.railMode) {
       this.lead += (this.walkSign * 3.9 - this.lead) * Math.min(1, dt * 2.5);
       const px = p.x + this.lead;
-      this.camPos.set(px, 1.5, 10);
+      this.camPos.set(px, 1.5, this.isTouch ? 13 : 10);
       this.target.set(px, 1.5, -1.2);
+    } else if (this.isTouch) {
+      // portrait phones: horizontal FOV is tiny at 390px, so pull the camera
+      // back and widen FOV — otherwise the side-wall frames are off-screen
+      this.camPos.set(-p.x * 0.25, p.y + 2.2, p.z + 8.5);
+      this.target.set(p.x, p.y + 1.1, p.z - 2.0);
     } else {
       this.camPos.set(-p.x * 0.3, p.y + 1.9, p.z + 5.2);
       this.target.set(p.x, p.y + 1.1, p.z - 1.2);
@@ -500,7 +509,7 @@ export class Character {
     }
     this.camera.lookAt(this._look);
 
-    const fovT = this.focusMode && this.isTouch ? 50 : 35;
+    const fovT = this.focusMode && this.isTouch ? 50 : this.isTouch ? 55 : 35;
     if (Math.abs(this.camera.fov - fovT) > 0.05) {
       this.camera.fov += (fovT - this.camera.fov) * Math.min(1, dt * 4);
       this.camera.updateProjectionMatrix();

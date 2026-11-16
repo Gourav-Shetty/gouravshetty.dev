@@ -8,7 +8,7 @@ import { Menu } from './core/Menu.js';
 import { Transition } from './core/Transition.js';
 import { Gallery } from './world/Gallery.js';
 import { makeCoverTexture } from './world/coverTexture.js';
-import { Dialogue, INTRO } from './core/dialogue.js';
+import { Dialogue, INTRO, introFor } from './core/dialogue.js';
 import { createQuests, questText } from './core/quests.js';
 import { exitTarget } from './core/doors.js';
 import { isPhone } from './core/device.js';
@@ -85,7 +85,7 @@ async function boot() {
   // Guestwall twin — pinned over the board while standing on its circle.
   const guestLink = document.createElement('button');
   guestLink.className = 'gallery_link frame-zoom-link guest-link';
-  guestLink.textContent = 'Sign the wall · G';
+  guestLink.textContent = isPhone ? 'Sign the wall' : 'Sign the wall · G';
   guestLink.style.position = 'fixed';
   guestLink.style.zIndex = '6';
   guestLink.style.left = '-500px';
@@ -220,7 +220,7 @@ async function boot() {
   const questEl = document.getElementById('quest');
   const questTextEl = document.getElementById('questText');
   const renderQuests = () => {
-    questTextEl.textContent = questText(quests);
+    questTextEl.textContent = questText(quests, isPhone);
     const showQuest = mode === 'walk' && (router.path === '/' || router.path === '/projects');
     questEl.classList.toggle('show', showQuest);
   };
@@ -260,13 +260,16 @@ async function boot() {
       s.ring.scale.set(sc, sc, 1);
     }
     let bx = -500, by = -500, show = false;
+    // clamp the pinned pill to the viewport — projected art coords can land
+    // half off-screen on a narrow phone
+    const clampPx = (px, half, max) => Math.min(max - half - 8, Math.max(half + 8, px));
     if (frameTarget) {
       projV.copy(spot.artPos);
       projV.y += spot.h * 0.5 + 0.22;
       projV.project(exp.camera);
       if (projV.z < 1) {
-        bx = (projV.x * 0.5 + 0.5) * innerWidth;
-        by = (-projV.y * 0.5 + 0.5) * innerHeight;
+        bx = clampPx((projV.x * 0.5 + 0.5) * innerWidth, 110, innerWidth);
+        by = clampPx((-projV.y * 0.5 + 0.5) * innerHeight, 25, innerHeight);
         show = !router.busy && !menu.isOpen;
       } else {
         frameTarget = null;
@@ -283,8 +286,8 @@ async function boot() {
       projV.y += 1.45;
       projV.project(exp.camera);
       if (projV.z < 1) {
-        gx = (projV.x * 0.5 + 0.5) * innerWidth;
-        gy = (-projV.y * 0.5 + 0.5) * innerHeight;
+        gx = clampPx((projV.x * 0.5 + 0.5) * innerWidth, 90, innerWidth);
+        gy = clampPx((-projV.y * 0.5 + 0.5) * innerHeight, 25, innerHeight);
         gshow = !router.busy && !menu.isOpen;
       }
     }
@@ -319,7 +322,7 @@ async function boot() {
     if (dialogue.active || router.busy) return;
     character.enabled = false;
     character.sayHi();
-    dialogue.play(INTRO, () => {
+    dialogue.play(introFor(isPhone), () => {
       if (mode === 'walk' && !character.isMoving) character.enabled = true;
     });
   };
@@ -347,13 +350,21 @@ async function boot() {
     }
   });
 
+  const replayIntro = () => {
+    if (dialogue.active || guestwallOpen || menu.isOpen || router.busy) return;
+    quests.done.add('hi');
+    renderQuests();
+    character.sayHi();
+    startIntro();
+  };
+  const toggleNight = () => {
+    if (guestwallOpen || menu.isOpen) return;
+    night = !night;
+    gallery.setNight(night);
+    toast(night ? 'Night shift — lights down' : 'Day shift — lights up');
+  };
   addEventListener('keydown', (e) => {
-    if ((e.key === 'h' || e.key === 'H') && !dialogue.active && !guestwallOpen && !e.target.closest('input')) {
-      quests.done.add('hi');
-      renderQuests();
-      character.sayHi();
-      startIntro();
-    }
+    if ((e.key === 'h' || e.key === 'H') && !e.target.closest('input')) replayIntro();
   });
   // Enter opens the zoomed project — their HUD reads "See details [Enter]".
   // (Clicking the pinned button already worked; keys never had a handler.)
@@ -386,11 +397,7 @@ async function boot() {
   });
   // N — night shift. Flips the room's lighting mood, keeps N toggling anywhere.
   addEventListener('keydown', (e) => {
-    if ((e.key === 'n' || e.key === 'N') && !guestwallOpen && !e.target.closest('input')) {
-      night = !night;
-      gallery.setNight(night);
-      toast(night ? 'Night shift — lights down' : 'Day shift — lights up');
-    }
+    if ((e.key === 'n' || e.key === 'N') && !guestwallOpen && !e.target.closest('input')) toggleNight();
   });
   // Guestwall — G pins a note to the home hall's left wall (localStorage).
   // Modal locks the walker; Esc / backdrop closes it.
@@ -466,6 +473,23 @@ async function boot() {
       setGuestwallOpen(true);
     }
   });
+  // Touch-only actions: night / replay intro / reset zoom. Keyboard users have
+  // N / H / the wheel; phone users get 44px tap targets instead.
+  if (isPhone) {
+    const actions = document.createElement('div');
+    actions.className = 'touch_actions';
+    actions.innerHTML = `
+      <button type="button" id="touchNight" aria-label="Toggle night mode">N</button>
+      <button type="button" id="touchHi" aria-label="Replay intro">H</button>
+      <button type="button" id="touchZoom" aria-label="Reset zoom">⤢</button>`;
+    document.body.appendChild(actions);
+    actions.querySelector('#touchNight').addEventListener('click', toggleNight);
+    actions.querySelector('#touchHi').addEventListener('click', replayIntro);
+    actions.querySelector('#touchZoom').addEventListener('click', () => {
+      character.zoom = 1;
+      toast('Zoom reset');
+    });
+  }
   if (startPath === '/') {
     // intro plays on every home load — no keys, no flags
     setTimeout(startIntro, 900);

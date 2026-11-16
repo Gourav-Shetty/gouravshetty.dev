@@ -10,7 +10,8 @@ export function createQuests() {
   return { done: new Set(), circles: new Set() };
 }
 
-export function questText(q) {
-  const parts = QUESTS.map((d) => `${q.done.has(d.id) ? '✓' : '○'} ${d.label}`);
+export function questText(q, phone = false) {
+  const parts = QUESTS.map((d) =>
+    `${q.done.has(d.id) ? '✓' : '○'} ${phone && d.id === 'hi' ? 'Say hi' : d.label}`);
   return `${parts.join(' · ')} — ${q.circles.size}/8 circles`;
 }

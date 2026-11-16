@@ -14,5 +14,6 @@ describe('quests', () => {
     const t = questText(q);
     assert.ok(t.includes('✓ Stand on a circle'));
     assert.ok(t.includes('2/8 circles'));
+    assert.ok(questText(q, true).includes('Say hi') && !questText(q, true).includes('(H)'), 'phone copy drops the keyboard hint');
   });
 });
