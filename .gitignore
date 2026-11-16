@@ -1,0 +1,28 @@
+# deps + build output
+node_modules/
+dist/
+
+# playwright / tooling scratch
+.playwright-mcp/
+test-results/
+graphify-out/
+scratch/
+*.tmp
+
+# --- third-party reference assets (NOT ours to ship or commit) ---
+# the reference artist's character model + animations live here locally so the
+# site can run with the exact avatar; they are not ours to redistribute.
+public/models/personnage_opti.glb
+tour/ref-site/bundle.js
+tour/ref-site/bundle.css
+tour/ref-site/index.html
+tour/ref-site/galerie.glb
+tour/ref-site/textures/
+tour/ref-site/nul.tmp
+tour/ref/
+tour/cadre.glb
+tour/oeuvre.png
+
+# screenshots (ours + theirs) — keep them out of history, they're bulky
+tour/*.png
+tour/*.mp4
