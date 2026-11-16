@@ -8,6 +8,7 @@ test-results/
 graphify-out/
 scratch/
 *.tmp
+.git-commit-msg.txt
 
 # --- third-party reference assets (NOT ours to ship or commit) ---
 # the reference artist's character model + animations live here locally so the
