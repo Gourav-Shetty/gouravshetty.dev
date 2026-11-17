@@ -53,42 +53,50 @@ function grainTexture(base, repeat = [10, 10]) {
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.repeat.set(repeat[0], repeat[1]);
+  t.anisotropy = ANISO;
   return t;
 }
 
-function textCanvas(lines, { w = 1024, h = 512, title = '', sub = 'projects', titlePx = 64, subPx = 30, noBg = false, bodyFont = false } = {}) {
+const ANISO = 8; // renderer clamps to the GPU max; helps angled wall textures
+
+function textCanvas(lines, { w = 1536, h = 768, title = '', sub = 'projects', titlePx = 84, subPx = 42, noBg = false, bodyFont = false } = {}) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d');
+  const k = w / 1024;
   if (!noBg) {
     g.fillStyle = '#f4f4f4';
     g.fillRect(0, 0, w, h);
   }
   g.fillStyle = '#111';
-  let y = noBg ? h * 0.42 : 90;
-  const x0 = noBg ? w * 0.16 : 60;
+  let y = noBg ? h * 0.42 : 120;
+  const x0 = noBg ? w * 0.16 : 90;
   if (title) {
     g.font = `700 ${titlePx}px "Josefin Sans", sans-serif`;
-    g.fillText(title, x0, y); y += titlePx * 0.8;
+    g.fillText(title, x0, y); y += titlePx * 0.85;
     g.font = `400 ${subPx}px "Josefin Sans", sans-serif`;
-    if (sub) g.fillText(sub, x0 + 2, y); y += 60;
+    if (sub) g.fillText(sub, x0 + 3, y); y += 70 * k;
   }
+  const bodyPx = Math.round((bodyFont ? 34 : 32) * k);
   g.font = bodyFont
-    ? '400 26px "Times New Roman", Times, serif'
-    : '400 24px "Josefin Sans", sans-serif';
+    ? `400 ${bodyPx}px "Times New Roman", Times, serif`
+    : `400 ${bodyPx}px "Josefin Sans", sans-serif`;
+  const step = Math.round(46 * k);
+  const maxChars = Math.max(40, Math.floor((w - 180) / (bodyPx * 0.52)));
   for (const line of lines) {
     const words = line.split(' ');
     let row = '';
     for (const word of words) {
-      if ((row + ' ' + word).length > 72) { g.fillText(row, 60, y); y += 34; row = word; }
+      if ((row + ' ' + word).length > maxChars) { g.fillText(row, x0, y); y += step; row = word; }
       else row = row ? row + ' ' + word : word;
     }
-    if (row) { g.fillText(row, 60, y); y += 34; }
-    y += 10;
-    if (y > h - 30) break;
+    if (row) { g.fillText(row, x0, y); y += step; }
+    y += 14 * k;
+    if (y > h - 40) break;
   }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = ANISO;
   return t;
 }
 
@@ -228,26 +236,29 @@ export class Gallery {
     this.wayfinding = [];
     const sheet = (left) => {
       const c = document.createElement('canvas');
-      c.width = 1024; c.height = 512;
+      const k = 1.5;
+      c.width = 1024 * k; c.height = 512 * k;
       const g = c.getContext('2d');
+      g.scale(k, k);
       g.strokeStyle = '#111';
       g.fillStyle = '#111';
       // elbow path, mirrored for the right sheet (the panneau_galerieL/R)
       const pts = left
         ? [[60, 330], [253, 432], [253, 318], [630, 318]]
         : [[964, 330], [771, 432], [771, 318], [394, 318]];
-      g.lineWidth = 13;
+      g.lineWidth = 17;
       g.lineJoin = 'miter';
       g.beginPath();
       g.moveTo(pts[0][0], pts[0][1]);
       for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
       g.stroke();
       // the word hugs the far edge of the elbow, like thes
-      g.font = '700 195px "Josefin Sans", sans-serif';
+      g.font = '700 215px "Josefin Sans", sans-serif';
       const w = g.measureText('Projects').width;
       g.fillText('Projects', left ? 968 - w : 56, 296);
       const tex = new THREE.CanvasTexture(c);
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = ANISO;
       const m = new THREE.Mesh(
         new THREE.PlaneGeometry(1.35, 0.675),
         new THREE.MeshBasicMaterial({ map: tex, transparent: true })
@@ -314,6 +325,7 @@ export class Gallery {
     ctx.fillText(`${this.guestNotes.length} note${this.guestNotes.length === 1 ? '' : 's'} pinned`, 68, 770);
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = ANISO;
     const board = new THREE.Mesh(
       new THREE.PlaneGeometry(3.2, 2.6),
       new THREE.MeshBasicMaterial({ map: tex })
@@ -375,6 +387,7 @@ export class Gallery {
     ctx.fillText(String(note.date || '').slice(0, 10), 14, 178);
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = ANISO;
     return tex;
   }
 
@@ -453,8 +466,9 @@ export class Gallery {
       new THREE.MeshBasicMaterial({ color: 0xffffff })
     );
     mat.position.z = 0.041;
-    const cover = new THREE.CanvasTexture(isPhone ? makeCoverTexture(p, 512, 700) : makeCoverTexture(p));
+    const cover = new THREE.CanvasTexture(isPhone ? makeCoverTexture(p, 640, 875) : makeCoverTexture(p));
     cover.colorSpace = THREE.SRGBColorSpace;
+    cover.anisotropy = ANISO;
     const art = new THREE.Mesh(
       new THREE.PlaneGeometry(artW, artH),
       new THREE.ShaderMaterial({
@@ -621,7 +635,7 @@ export class Gallery {
     // panneau_homeR/galerieL at the far end — text + elbow arrows drawn
     // straight onto the wall (transparent canvas, no card)
     const panel = (title, sub, x) => {
-      const tex = textCanvas([], { w: 512, h: 512, title, sub, titlePx: 96, subPx: 72, noBg: true });
+      const tex = textCanvas([], { w: 640, h: 640, title, sub, titlePx: 120, subPx: 90, noBg: true });
       const m = new THREE.Mesh(
         new THREE.PlaneGeometry(1.05, 1.05),
         new THREE.MeshBasicMaterial({ map: tex, transparent: true, color: 0x666666 })
@@ -691,6 +705,7 @@ export class Gallery {
     const prevNext = u.u_next.value;
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = ANISO;
     u.u_next.value = tex;
     // the paging wipe: 0→1 over 2s, texture promotes to u_tex on complete.
     // dispose the superseded textures — repeated paging used to leak GPU

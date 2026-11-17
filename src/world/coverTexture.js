@@ -1,27 +1,34 @@
 import * as THREE from 'three';
 
+// Anisotropic filtering keeps canvas textures legible at the grazing angles
+// the side-wall frames and wayfinding sheets are viewed from. The renderer
+// clamps this to the GPU's max, so 8 is safe everywhere including phones.
+const ANISO = 8;
+
 export function makePlaque(p) {
   const c = document.createElement('canvas');
-  c.width = 512; c.height = 128;
+  c.width = 768; c.height = 192;
   const g = c.getContext('2d');
   g.fillStyle = '#141414';
-  g.fillRect(0, 0, 512, 128);
+  g.fillRect(0, 0, c.width, c.height);
   g.fillStyle = '#f2f2f2';
   g.textAlign = 'center';
-  g.font = '600 44px "Josefin Sans", sans-serif';
-  g.fillText((p.title || '').slice(0, 24), 256, 58);
-  g.font = '400 30px "Josefin Sans", sans-serif';
+  g.font = '600 58px "Josefin Sans", sans-serif';
+  g.fillText((p.title || '').slice(0, 24), 384, 86);
+  g.font = '400 40px "Josefin Sans", sans-serif';
   g.fillStyle = '#bdbdbd';
-  g.fillText(`${p.year || ''} — ${(p.stack || []).slice(0, 2).join(' · ')}`.slice(0, 40), 256, 100);
+  g.fillText(`${p.year || ''} — ${(p.stack || []).slice(0, 2).join(' · ')}`.slice(0, 40), 384, 150);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = ANISO;
   return t;
 }
 
-export function makeCoverTexture(project, W = 740, H = 1000) {
+export function makeCoverTexture(project, W = 1024, H = 1400) {
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d');
+  const k = W / 1024; // type scales with the canvas so it survives minification
 
   if (project.image && project._img) {
     // Dedicated gallery artwork: crisp clean white paper background
@@ -59,50 +66,50 @@ export function makeCoverTexture(project, W = 740, H = 1000) {
   g.fillStyle = 'rgba(0,0,0,0.6)';
   g.fillRect(0, artH, W, H - artH);
   g.fillStyle = '#fff';
-  g.font = '700 52px "Josefin Sans", sans-serif';
-  g.fillText(project.title.slice(0, 18), 40, artH + 90);
-  g.font = '400 30px "Josefin Sans", sans-serif';
+  g.font = `700 ${Math.round(68 * k)}px "Josefin Sans", sans-serif`;
+  g.fillText(project.title.slice(0, 18), 52 * k, artH + 120 * k);
+  g.font = `400 ${Math.round(40 * k)}px "Josefin Sans", sans-serif`;
   g.fillStyle = '#ddd';
-  g.fillText((project.tagline || '').slice(0, 32), 40, artH + 150);
+  g.fillText((project.tagline || '').slice(0, 32), 52 * k, artH + 200 * k);
   g.fillStyle = project.color || '#fff';
-  g.font = '600 26px "Josefin Sans", sans-serif';
-  g.fillText((project.stack || []).slice(0, 3).join(' · ').slice(0, 34), 40, artH + 215);
+  g.font = `600 ${Math.round(34 * k)}px "Josefin Sans", sans-serif`;
+  g.fillText((project.stack || []).slice(0, 3).join(' · ').slice(0, 34), 52 * k, artH + 280 * k);
   return c;
 }
 
-function drawPattern(g, kind, color, W = 740, H = 650) {
-  g.strokeStyle = color; g.fillStyle = color; g.lineWidth = 3;
+function drawPattern(g, kind, color, W = 1024, H = 910) {
+  g.strokeStyle = color; g.fillStyle = color; g.lineWidth = 4;
   if (kind === 'waves') {
-    for (let y = 40; y < H; y += 36) {
+    for (let y = 50; y < H; y += 50) {
       g.beginPath();
-      for (let x = 0; x <= W; x += 8) g.lineTo(x, y + Math.sin(x / 40 + y) * 12);
+      for (let x = 0; x <= W; x += 10) g.lineTo(x, y + Math.sin(x / 52 + y) * 16);
       g.stroke();
     }
   } else if (kind === 'dots') {
-    for (let y = 30; y < H - 20; y += 40) for (let x = 30; x < W - 20; x += 40) {
-      g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill();
+    for (let y = 40; y < H - 25; y += 54) for (let x = 40; x < W - 25; x += 54) {
+      g.beginPath(); g.arc(x, y, 8, 0, 7); g.fill();
     }
   } else if (kind === 'rings') {
-    for (let i = 0; i < 8; i++) { g.beginPath(); g.arc(W / 2, H / 2, 20 + i * 28, 0, 7); g.stroke(); }
+    for (let i = 0; i < 8; i++) { g.beginPath(); g.arc(W / 2, H / 2, 28 + i * 38, 0, 7); g.stroke(); }
   } else if (kind === 'diagonal') {
-    for (let i = -W; i < W * 2; i += 36) {
-      g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 300, H); g.stroke();
+    for (let i = -W; i < W * 2; i += 48) {
+      g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 400, H); g.stroke();
     }
   } else if (kind === 'bars') {
-    for (let x = 20; x < W; x += 44) {
-      const h = 60 + ((x * 7919) % (H - 100));
-      g.fillRect(x, H - h, 22, h);
+    for (let x = 26; x < W; x += 60) {
+      const h = 80 + ((x * 7919) % (H - 130));
+      g.fillRect(x, H - h, 30, h);
     }
   } else if (kind === 'triangles') {
-    for (let y = 20; y < H; y += 70) for (let x = 20; x < W; x += 70) {
-      g.beginPath(); g.moveTo(x, y); g.lineTo(x + 30, y + 44); g.lineTo(x - 30, y + 44); g.stroke();
+    for (let y = 26; y < H; y += 94) for (let x = 26; x < W; x += 94) {
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + 40, y + 58); g.lineTo(x - 40, y + 58); g.stroke();
     }
   } else if (kind === 'cross') {
-    for (let y = 20; y < H; y += 52) for (let x = 20; x < W; x += 52) {
-      g.beginPath(); g.moveTo(x - 10, y); g.lineTo(x + 10, y); g.moveTo(x, y - 10); g.lineTo(x, y + 10); g.stroke();
+    for (let y = 26; y < H; y += 70) for (let x = 26; x < W; x += 70) {
+      g.beginPath(); g.moveTo(x - 14, y); g.lineTo(x + 14, y); g.moveTo(x, y - 14); g.lineTo(x, y + 14); g.stroke();
     }
   } else {
-    for (let x = 0; x <= W; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
-    for (let y = 0; y <= H; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+    for (let x = 0; x <= W; x += 54) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+    for (let y = 0; y <= H; y += 54) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
   }
 }

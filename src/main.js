@@ -123,7 +123,7 @@ async function boot() {
     const nnext = projects[(ni + 1) % len];
     history.pushState({}, '', `/project/${next.uid}`);
     router.path = `/project/${next.uid}`;
-    gallery.setTexture(currentFrame.art, isPhone ? makeCoverTexture(next, 512, 700) : makeCoverTexture(next));
+    gallery.setTexture(currentFrame.art, isPhone ? makeCoverTexture(next, 640, 875) : makeCoverTexture(next));
     currentUid = next.uid;
     const tmp = document.createElement('div');
     tmp.innerHTML = projectHTML(next, nprev, nnext);
