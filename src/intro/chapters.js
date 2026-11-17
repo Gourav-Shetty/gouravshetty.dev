@@ -5,10 +5,13 @@
  * Timing is clamped to one chapter per tick: a backgrounded tab that resumes
  * with a huge delta must never fast-forward through the story. */
 
-const FIRST_SENTENCE = (s, fallback) => {
+// Short lead clause: content lines are long one-liners, captions need one beat.
+// Splits on an em/en dash or sentence break, but not the hyphen in "real-time".
+const lead = (s, fallback) => {
   const text = String(s || '').trim();
   if (!text) return fallback;
-  return text.split(/(?<=[.!?])\s/)[0];
+  const first = text.split(/\s+[—–-]\s+|\.\s+/)[0].trim();
+  return first || fallback;
 };
 
 const projectTitle = (projects, i) => String(projects?.[i]?.title || '').trim();
@@ -34,10 +37,10 @@ export function buildChapters({
       id: 'who',
       label: 'WHO',
       caption: "I'm Gourav.",
-      sub: FIRST_SENTENCE(about.oneLiner, 'I build playful, real-time web things.'),
+      sub: lead(about.oneLiner, 'I build playful, real-time web things.'),
       target: 'avatar',
-      hole: { x: 50, y: 58, r: 150 },
-      phoneHole: { x: 50, y: 60, r: 92 },
+      hole: { x: 50, y: 50, r: 135 },
+      phoneHole: { x: 50, y: 52, r: 88 },
       hold: 2600,
     },
     {
@@ -46,29 +49,29 @@ export function buildChapters({
       caption: `${b}. ${a}. ${c}.`,
       sub: 'Eight projects hang on these walls.',
       target: 'frame-left',
-      hole: { x: 29, y: 44, r: 170 },
-      phoneHole: { x: 26, y: 43, r: 96 },
+      hole: { x: 20, y: 32, r: 150 },
+      phoneHole: { x: 22, y: 36, r: 92 },
       hold: 3000,
     },
     {
       id: 'how',
       label: 'HOW',
       caption: skillLine || 'JavaScript · Python · CSS',
-      sub: FIRST_SENTENCE(about.howIWork, 'I start with the fun part, then figure out the plumbing.'),
+      sub: lead(about.howIWork, 'I start with the fun part, then figure out the plumbing.'),
       target: 'center',
-      hole: { x: 50, y: 50, r: 210 },
-      phoneHole: { x: 50, y: 50, r: 112 },
+      hole: { x: 50, y: 44, r: 200 },
+      phoneHole: { x: 50, y: 46, r: 108 },
       hold: 2800,
     },
     {
       id: 'now',
       label: 'NOW',
-      caption: FIRST_SENTENCE(now.learning, 'Learning MLOps, GPUs, cloud.'),
-      sub: now.offScreen || 'Away from the screen: gaming, badminton, sketches.',
+      caption: `Learning ${lead(now.learning, 'MLOps, GPUs, cloud')}.`,
+      sub: lead(now.offScreen, 'Gaming, badminton, sketches.'),
       // The end-wall spotlight is out of range on a 2-spot phone rig, so the
       // phone stop is caption-only: null phoneHole = do not move the hole.
       target: 'endwall',
-      hole: { x: 50, y: 40, r: 200 },
+      hole: { x: 50, y: 36, r: 185 },
       phoneHole: null,
       hold: 3000,
     },
@@ -132,5 +135,12 @@ export function createIntro(chapters, opts = {}) {
 
     finish() { return end(false); },
     skip() { return end(true); },
+    // H replay: re-arm a finished tour so a second page-load-style run works.
+    reset() {
+      state = 'idle';
+      index = -1;
+      elapsed = 0;
+      ended = false;
+    },
   };
 }

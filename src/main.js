@@ -352,6 +352,7 @@ async function boot() {
     onFinish: ({ skipped }) => {
       if (introShown) overlay.hide(reducedMotion ? 0 : skipped ? 0.25 : 0.9);
       gallery.introEnd(reducedMotion ? 0 : 0.6);
+      lastInput = performance.now(); // HUD returns immediately, not after idle
       if (mode === 'walk' && !character.isMoving) character.enabled = true;
     },
   });
@@ -359,8 +360,10 @@ async function boot() {
 
   const startIntro = () => {
     if (intro.active || router.busy || menu.isOpen || guestwallOpen || mode !== 'walk') return;
+    gsap.killTweensOf('#hud'); // the router's entrance fade must not fight us
     character.enabled = false;
     character.sayHi();
+    intro.reset(); // a finished tour must be able to play again on H
     intro.start();
   };
 

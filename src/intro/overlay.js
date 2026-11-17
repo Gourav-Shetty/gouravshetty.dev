@@ -10,6 +10,7 @@ export function createOverlay() {
   const label = document.getElementById('introLabel');
   const line = document.getElementById('introLine');
   const sub = document.getElementById('introSub');
+  const hint = document.getElementById('introHint');
   const skipSurface = document.getElementById('introSkip');
 
   let shown = false;
@@ -38,6 +39,7 @@ export function createOverlay() {
       shown = true;
       root.classList.add('show');
       gsap.set(root, { opacity: 1 });
+      hint.textContent = isPhone ? 'tap to skip' : 'tap or press Esc to skip';
       document.body.classList.add('intro-active');
 
       num.textContent = `0${i + 1} / 04`;

@@ -139,6 +139,20 @@ describe('createIntro', () => {
     assert.equal(intro.chapters, chapters);
   });
 
+  it('can be reset after finishing so H replays the whole tour', () => {
+    const seen = [];
+    const intro = createIntro(chapters, { onChapter: (c) => seen.push(c.id) });
+    intro.start();
+    intro.skip();
+    assert.equal(intro.start(), false, 'finished tour cannot restart without reset');
+    intro.reset();
+    assert.equal(intro.active, false);
+    intro.start();
+    assert.equal(intro.active, true);
+    assert.equal(intro.index, 0);
+    assert.deepEqual(seen, ['who', 'who']);
+  });
+
   it('caps a single large tick at one transition (hidden-tab safety)', () => {
     const seen = [];
     const intro = createIntro(chapters, { onChapter: (c) => seen.push(c.id) });
