@@ -9,6 +9,7 @@ A 3D portfolio you walk through. Eight projects hang like drawings in a quiet wh
 | | |
 |---|---|
 | **Home hall** | eight frames, standing circles, ink footprints, night mode |
+| **Opening sequence** | the hall starts dark; a light finds the avatar, then each part of the story |
 | **Projects rail** | a long single-wall exhibition you walk end to end |
 | **Project pages** | the artwork fills the view, with the story beside it |
 | **Guestwall** | pin a note on the wall; notes stay in your browser |
@@ -53,6 +54,12 @@ The skills block on `/about` is counted from `projects.json` automatically — n
 
 The deep end of the home hall walks you into `/projects`; either end of the rail walks you home.
 
+## Opening sequence
+
+On the first home load the hall starts dark. A small light finds the avatar, then moves on to the frames, the skills, and what's next — WHO, WHAT, HOW, NOW — with one short line at each stop. The hall fills with light at the end and you can walk.
+
+Tap anywhere or press `Esc` to skip at any point; `H` replays it. Visitors who prefer reduced motion go straight to a fully lit hall with no captions. The sequence uses the site's existing lights and ink styling — no assets, no audio.
+
 ## Structure
 
 ```
@@ -65,6 +72,8 @@ src/world/Gallery.js      rooms, frames, rings, dust, lights
 src/world/Character.js    avatar, walking, camera, input
 src/world/coverTexture.js procedural covers and plaques
 src/core/skills.js        stack counts from projects.json
+src/intro/chapters.js     chapter copy + intro state machine (pure)
+src/intro/overlay.js      scrim, moving cut-out, captions
 public/data/*.json        all editable content
 tests/                    content + routing + controller tests
 ```
