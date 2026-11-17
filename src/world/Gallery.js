@@ -143,44 +143,6 @@ export class Gallery {
       spots.push(s);
     }
     this.lights = { hemi, key, spots };
-
-    // Dedicated intro spotlight. It rests at intensity 0 and is only used by
-    // the chapter tour, so it never touches the base lights or night mode:
-    // "restore" is simply back to zero. Phones keep their 2-spot budget — no
-    // intro spot there, the screen-space cut-out carries the reveal instead.
-    if (!touch) {
-      const introSpot = new THREE.SpotLight(0xffffff, 0, 22, 0.55, 0.85);
-      introSpot.position.set(0, 5.8, 6);
-      introSpot.target.position.set(0, 0, 5.5);
-      this.scene.add(introSpot, introSpot.target);
-      this.introSpot = introSpot;
-    }
-  }
-
-  // World-space point the spotlight should reveal for a chapter target.
-  introTargetPos(id) {
-    switch (id) {
-      case 'avatar': return new THREE.Vector3(0, 0, 5.5);
-      case 'frame-left': return new THREE.Vector3(-3.3, 1.2, 4.5);
-      case 'frame-right': return new THREE.Vector3(3.3, 1.2, 4.5);
-      case 'endwall': return new THREE.Vector3(0, 2.0, -14);
-      case 'center': return new THREE.Vector3(0, 0.4, 2);
-      default: return new THREE.Vector3(0, 0, 5.5);
-    }
-  }
-
-  introSpotTo(pos, intensity = 60) {
-    if (!this.introSpot) return;
-    const s = this.introSpot;
-    const y = pos.y ?? 0;
-    gsap.to(s.position, { x: pos.x, y: 5.8, z: pos.z + 1.4, duration: 0.9, ease: 'sine.inOut', overwrite: true });
-    gsap.to(s.target.position, { x: pos.x, y, z: pos.z, duration: 0.9, ease: 'sine.inOut', overwrite: true });
-    gsap.to(s, { intensity, duration: 0.9, ease: 'sine.inOut', overwrite: true });
-  }
-
-  introEnd(duration = 0.6) {
-    if (!this.introSpot) return;
-    gsap.to(this.introSpot, { intensity: 0, duration, ease: 'sine.out', overwrite: true });
   }
 
   buildRoom() {
