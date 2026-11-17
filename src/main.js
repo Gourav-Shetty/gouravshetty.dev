@@ -8,7 +8,8 @@ import { Menu } from './core/Menu.js';
 import { Transition } from './core/Transition.js';
 import { Gallery } from './world/Gallery.js';
 import { makeCoverTexture } from './world/coverTexture.js';
-import { Dialogue, INTRO, introFor } from './core/dialogue.js';
+import { buildChapters, createIntro } from './intro/chapters.js';
+import { createOverlay } from './intro/overlay.js';
 import { createQuests, questText } from './core/quests.js';
 import { exitTarget } from './core/doors.js';
 import { isPhone } from './core/device.js';
@@ -106,6 +107,7 @@ async function boot() {
   let currentFrame = null;
   let night = false;
   let currentUid = null;
+  let intro = null; // assigned after boot; read by tick / visibility handlers
 
   // In-frame arrow paging — the arrows flip whole pages, but here only the
   // frame content dissolves (ink u_tex→u_next) and the wall labels swap.
@@ -216,11 +218,14 @@ async function boot() {
   // the fullscreen menu covers the canvas — stop rendering the hidden scene
   const menuOpen = menu.open.bind(menu);
   const menuClose = menu.close.bind(menu);
-  menu.open = () => { menuOpen(); exp.pause(); };
+  menu.open = () => { if (intro?.active) return; menuOpen(); exp.pause(); };
   menu.close = () => { menuClose(); exp.resume(); };
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) exp.pause();
-    else if (!menu.isOpen) exp.resume();
+    if (document.hidden) {
+      // a stalled tab must not resume into mid-chapter with a desynced tween
+      if (intro?.active) intro.skip();
+      exp.pause();
+    } else if (!menu.isOpen) exp.resume();
   });
 
   // quests: circle stand / project open / hi — banner + X/8 circles readout
@@ -250,6 +255,8 @@ async function boot() {
       gallery.updateDust(elapsed || 0);
       dustAcc = 0;
     }
+    // chapter tour clock (ms); delta is seconds, capped at 50 ms per tick
+    if (intro?.active) intro.tick(delta * 1000);
     // quest: standing on any circle
     if (character.openSpot && mode === 'walk') {
       quests.done.add('circle');
@@ -306,7 +313,7 @@ async function boot() {
     const hud = document.getElementById('hud');
     if (hud && !router.busy) {
       const idle = performance.now() - lastInput > 7000 && performance.now() - bootT > 9000;
-      hud.style.opacity = (spot && mode === 'walk') || idle ? '0' : '1';
+      hud.style.opacity = intro?.active || (spot && mode === 'walk') || idle ? '0' : '1';
     }
   });
   exp.start();
@@ -322,25 +329,59 @@ async function boot() {
   gsap.to('.menu_open button', { y: '0%', duration: 0.4, ease: 'sine.out', delay: 0.2 });
   gsap.set('.menu_button button', { y: '0%' });
 
-  // Intro dialogue — avatar introduces the owner on first visit, H replays.
-  // Any route change ends it instantly so pages never overlap content.
-  const dialogue = new Dialogue();
-  window.__dialogue = dialogue;
+  // Spotlight chapters — dark start, one thing revealed at a time, full light.
+  // Replaces the old 900 ms auto dialogue; H replays it. Reduced motion skips
+  // straight to a fully lit hall with no captions.
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const chapters = buildChapters({ projects, skills, about, now, isPhone });
+  const overlay = createOverlay();
+  let introShown = false;
+
+  intro = createIntro(chapters, {
+    reduced: reducedMotion,
+    onChapter: (chapter, i) => {
+      introShown = true;
+      overlay.show(chapter, i, { isPhone });
+      const pos = gallery.introTargetPos(chapter.target);
+      if (chapter.target === 'avatar') {
+        pos.x = character.root.position.x;
+        pos.z = character.root.position.z;
+      }
+      gallery.introSpotTo(pos, 62);
+    },
+    onFinish: ({ skipped }) => {
+      if (introShown) overlay.hide(reducedMotion ? 0 : skipped ? 0.25 : 0.9);
+      gallery.introEnd(reducedMotion ? 0 : 0.6);
+      if (mode === 'walk' && !character.isMoving) character.enabled = true;
+    },
+  });
+  overlay.onSkip(() => intro.skip());
+
   const startIntro = () => {
-    if (dialogue.active || router.busy) return;
+    if (intro.active || router.busy || menu.isOpen || guestwallOpen || mode !== 'walk') return;
     character.enabled = false;
     character.sayHi();
-    dialogue.play(introFor(isPhone), () => {
-      if (mode === 'walk' && !character.isMoving) character.enabled = true;
-    });
+    intro.start();
   };
+
+  // Skip has capture priority: tap (on the skip surface), or Esc / Enter /
+  // Space. stopPropagation keeps a skip tap from opening a frame behind it.
+  addEventListener('keydown', (e) => {
+    if (!intro.active) return;
+    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      intro.skip();
+    }
+  }, true);
+
   // Where the character was last walking (before entering an article) —
   // Esc-from-details returns to this page, character back on its circle.
   let articleOrigin = (router.path === '/' || router.path === '/projects') ? router.path : '/';
   const origRender = router.render.bind(router);
   router.render = async (path, isPop) => {
     if (router.path === '/' || router.path === '/projects') articleOrigin = router.path;
-    dialogue.finish();
+    if (intro.active) intro.skip();
     if (guestwallOpen) setGuestwallOpen(false);
     return origRender(path, isPop);
   };
@@ -359,14 +400,14 @@ async function boot() {
   });
 
   const replayIntro = () => {
-    if (dialogue.active || guestwallOpen || menu.isOpen || router.busy) return;
+    if (intro.active || guestwallOpen || menu.isOpen || router.busy) return;
     quests.done.add('hi');
     renderQuests();
     character.sayHi();
     startIntro();
   };
   const toggleNight = () => {
-    if (guestwallOpen || menu.isOpen) return;
+    if (intro.active || guestwallOpen || menu.isOpen) return;
     night = !night;
     gallery.setNight(night);
     toast(night ? 'Night shift — lights down' : 'Day shift — lights up');
@@ -379,7 +420,7 @@ async function boot() {
   addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;
     if (e.target.closest('input')) return;
-    if (dialogue.active || guestwallOpen || router.busy || menu.isOpen) return;
+    if (intro.active || guestwallOpen || router.busy || menu.isOpen) return;
     if (mode !== 'walk' || (router.path !== '/' && router.path !== '/projects')) return;
     if (!frameTarget) {
       // Enter on the guestwall circle opens the form, like See details
@@ -476,7 +517,7 @@ async function boot() {
     if (e.target.closest('input,textarea')) return;
     if ((e.key === 'g' || e.key === 'G') && mode === 'walk'
       && (router.path === '/' || router.path === '/projects')
-      && !dialogue.active && !router.busy && !menu.isOpen) {
+      && !intro.active && !router.busy && !menu.isOpen) {
       e.preventDefault();
       setGuestwallOpen(true);
     }
@@ -499,13 +540,18 @@ async function boot() {
     });
   }
   if (startPath === '/') {
-    // intro plays on every home load — no keys, no flags
-    setTimeout(startIntro, 900);
+    // plays once per page load, immediately after the loader lifts
+    setTimeout(startIntro, 100);
   }
   window.__char = character;
   window.__gallery = gallery;
   window.__trans = transition;
-  window.__dbg = { router: () => ({ busy: router.busy, path: router.path, tbusy: transition.busy, mode, enabled: character.enabled, moving: character.isMoving }) };
+  window.__intro = intro;
+  window.__dbg = {
+    router: () => ({ busy: router.busy, path: router.path, tbusy: transition.busy, mode, enabled: character.enabled, moving: character.isMoving }),
+    intro: () => ({ active: intro.active, index: intro.index, reduced: intro.reduced, shown: overlay.shown }),
+    introSpot: () => gallery.introSpot?.intensity ?? null,
+  };
 }
 
 boot().catch((err) => {
