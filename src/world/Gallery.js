@@ -59,6 +59,12 @@ function grainTexture(base, repeat = [10, 10]) {
 
 const ANISO = 8; // renderer clamps to the GPU max; helps angled wall textures
 
+// Frame layout is shared by the frames and their spotlights so each pool of
+// light lands on a painting instead of in the gap between two of them.
+const FRAME_Z = (i) => 4.5 - i * 4.4;
+const FRAME_Y = 2.15;
+const FRAME_WALL_X = 4.57;
+
 function textCanvas(lines, { w = 1536, h = 768, title = '', sub = 'projects', titlePx = 84, subPx = 42, noBg = false, bodyFont = false } = {}) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
@@ -122,7 +128,7 @@ export class Gallery {
     const touch = isPhone;
     const dim = touch ? 0.72 : 1;
     this.dim = dim;
-    // phone GPU budget: 2 spots (not 4), 1024² shadow map (not 2048²),
+    // phone GPU budget: 2 spots (desktop lights all eight paintings), 1024² shadow map (not 2048²),
     // tighter frustum; the contact blob fakes the avatar's ground shadow
     this.baseHemi = (touch ? 1.28 : 1.15) * dim;
     this.baseKey = 2.0 * dim;
@@ -140,13 +146,17 @@ export class Gallery {
     key.shadow.camera.updateProjectionMatrix();
     this.scene.add(key);
     const spots = [];
-    const spotsToBuild = touch
-      ? [[-2.6, 4.4, 2], [2.6, 4.4, 2]]
-      : [[-2.6, 4.4, 2], [2.6, 4.4, 2], [-2.6, 4.4, -6], [2.6, 4.4, -6]];
-    for (const [x, y, z] of spotsToBuild) {
-      const s = new THREE.SpotLight(0xffffff, this.baseSpot, 14, 0.55, 0.7);
-      s.position.set(x, y, z);
-      s.target.position.set(x > 0 ? 4.5 : -4.5, 2.15, z);
+    // One spotlight per painting, mounted just inside the room and aimed at
+    // the frame's centre. Desktop lights all eight; a phone keeps its 2-spot
+    // budget and lights the two nearest paintings instead of empty wall.
+    const litFrames = touch
+      ? [[-1, 0], [1, 0]]
+      : [-1, 1].flatMap((side) => [0, 1, 2, 3].map((i) => [side, i]));
+    for (const [side, i] of litFrames) {
+      const z = FRAME_Z(i);
+      const s = new THREE.SpotLight(0xffffff, this.baseSpot, 10, 0.45, 0.7);
+      s.position.set(side * 3.0, 5.25, z);
+      s.target.position.set(side * FRAME_WALL_X, FRAME_Y, z);
       this.scene.add(s, s.target);
       spots.push(s);
     }
@@ -439,10 +449,9 @@ export class Gallery {
   buildFrames() {
     this.ringGeo = new THREE.RingGeometry(0.42, 0.46, 40);
     const size = 2.2;
-    const height = 2.15;
     for (let i = 0; i < 4; i++) {
-      this.addFrame(this.projects[i * 2], -4.57, height, 4.5 - i * 4.4, Math.PI / 2, size);
-      this.addFrame(this.projects[i * 2 + 1], 4.57, height, 4.5 - i * 4.4, -Math.PI / 2, size);
+      this.addFrame(this.projects[i * 2], -FRAME_WALL_X, FRAME_Y, FRAME_Z(i), Math.PI / 2, size);
+      this.addFrame(this.projects[i * 2 + 1], FRAME_WALL_X, FRAME_Y, FRAME_Z(i), -Math.PI / 2, size);
     }
   }
 
