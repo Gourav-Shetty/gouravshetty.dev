@@ -11,5 +11,4 @@ scratch/
 .git-commit-msg.txt
 
 # local-only assets (not part of the repo)
-public/models/avatar.glb
 tour/
